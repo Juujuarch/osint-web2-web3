@@ -9,9 +9,10 @@ Note: if the identifier is an **X handle or a real name whose main target is on 
 ## Agent instruction
 
 1. Baseline the identifier (searchable attributes)
-2. Pivot one at a time: email -> accounts, username -> platforms, phone -> carrier/accounts, name -> profiles
-3. Tier every match using the global framework (skills/osint/SKILL.md)
-4. Output: tiered match list + evidence + next pivots
+2. Quick sweep first: `bash tools/person-hunt.sh <username>` (or `--name "Full Name"`) - keyless profile-existence check on github / x / keybase / steam / tiktok (+ instagram when not rate-limited), with handle-candidate generation in name mode
+3. Pivot one at a time: email -> accounts, username -> platforms, phone -> carrier/accounts, name -> profiles
+4. Tier every match using the global framework (skills/osint/SKILL.md)
+5. Output: tiered match list + evidence + next pivots
 
 ## Email
 
