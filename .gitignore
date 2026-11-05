@@ -26,6 +26,9 @@ resp*.json
 # === dataset leak lokal (combolist / stealer log / dump) ===
 leaks/
 
+# === data referensi hasil fetch (katalog breach publik, metadata only) ===
+data/
+
 # === python / node ===
 __pycache__/
 *.pyc

@@ -49,8 +49,8 @@ echo "==> Identifier: $IDENT (classified: $KIND)"
 echo "==> Dataset: $DATASET"
 echo "==> Mode: $([ $SHOW -eq 1 ] && echo 'FULL LINES (--show)' || echo 'masked (default)')"
 
-# collect candidate files: plain text + gzip (zip left to manual extraction)
-FILES=$(find "$DATASET" -type f \( -name '*.txt' -o -name '*.csv' -o -name '*.tsv' -o -name '*.gz' -o -name '*.log' \) 2>/dev/null | sort)
+# collect candidate files: plain text + gzip + json (zip/7z left to manual extraction)
+FILES=$(find "$DATASET" -type f \( -name '*.txt' -o -name '*.csv' -o -name '*.tsv' -o -name '*.gz' -o -name '*.log' -o -name '*.json' \) 2>/dev/null | sort)
 if [ -z "$FILES" ]; then
   echo "==> No .txt/.csv/.tsv/.gz/.log files in dataset - nothing to scan"
   exit 0
