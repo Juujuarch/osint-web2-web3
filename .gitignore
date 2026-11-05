@@ -1,0 +1,36 @@
+# === kredensial: jangan pernah commit ===
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.pub.bak
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*credential*
+*credentials*
+*secret*
+*token*.txt
+gh_upload*.sh
+.netrc
+
+# === output investigasi (bisa berisi data sensitif target) ===
+out/
+findings/
+cases/
+*.tmp
+resp*.json
+
+# === python / node ===
+__pycache__/
+*.pyc
+node_modules/
+.venv/
+venv/
+
+# === os ===
+.DS_Store
+Thumbs.db
+desktop.ini
