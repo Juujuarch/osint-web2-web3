@@ -9,7 +9,7 @@ This skill turns breach/leak data into usable intelligence: confirming exposure,
 ## Agent instruction
 
 1. Legal gate (see below) - especially for third-party targets
-2. Breach search with k-anonymity (tools/breach-check.sh) - never send full identifiers to untrusted services
+2. Breach search: email mode needs HIBP_KEY, password mode is keyless (tools/breach-check.sh) - never send full identifiers to untrusted services
 3. Local dataset query if you hold a dump (tools/leak-grep.sh) - masked by default
 4. If a record matches: run MATCHING LOGIC before attributing it to the target
 5. Enrichment: extract fields, check freshness, dedupe
@@ -24,15 +24,22 @@ This skill turns breach/leak data into usable intelligence: confirming exposure,
 - Hard rule for everything below: leak data is for **exposure confirmation and defense**. Using stolen credentials to access any account you do not own is credential stuffing / unauthorized access - illegal in effectively every jurisdiction, no matter how the data was obtained
 - Prefer k-anonymity and commercial services with ToS over downloading full leaked databases; if you must handle a dump, isolate it (offline VM, no network) and minimize what you keep
 
-## 1. Breach search (k-anonymity)
+## 1. Breach search (two modes - do not mix them up)
 
-K-anonymity model: only the first 5 hex chars of the SHA-1 hash are sent to the service; matching suffixes are checked locally. The full identifier never leaves your machine.
+| Mode | Question | Endpoint | Key |
+|---|---|---|---|
+| default (email) | which known breaches exposed this email? | HIBP v3 `/api/v3/breachedaccount/{email}` | `HIBP_KEY` env |
+| `--pass` | has this exact password appeared in a breach corpus? | Pwned Passwords `/range/{hash5}` | none |
 
 ```bash
-bash tools/breach-check.sh <email-or-identifier>
+HIBP_KEY=... bash tools/breach-check.sh target@example.com   # breach list for the email
+bash tools/breach-check.sh '<password>' --pass               # password exposure, keyless
 ```
 
-What to record per hit: breach name, breach date, exposed fields (email / password hash / phone / address / IP), and whether the record is verified or unverified.
+- k-anonymity (`--pass`): only the first 5 hex chars of the SHA-1 **password** hash leave the machine; suffixes are matched locally. The full password is never transmitted
+- The tool validates responses: an HTML page (moved endpoint / block page) is reported as an ERROR - never as a silent CLEAN
+- Keyless breach-name catalog (names + dates, no account lookup): `https://haveibeenpwned.com/api/v3/breaches`
+- What to record per hit: breach name, breach date, exposed fields (email / password hash / phone / address / IP), and whether the record is verified or unverified
 
 ## 2. Leak-record enrichment (getting details from leaks)
 

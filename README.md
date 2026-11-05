@@ -48,7 +48,8 @@ bash tools/install-backends.sh
 bash tools/username-hunt.sh <username>      # search a username across 600+ platforms
 bash tools/domain-recon.sh <domain>         # whois/DNS/subdomains/headers
 bash tools/x-history.sh <handle>            # X profile history via public archives
-bash tools/breach-check.sh <email>          # breach exposure check (k-anonymity, no key)
+HIBP_KEY=... bash tools/breach-check.sh <email>   # email -> breach list (HIBP API key)
+bash tools/breach-check.sh '<password>' --pass    # password exposure (k-anonymity, keyless)
 bash tools/leak-grep.sh <identifier> [dir]  # query a local combolist/stealer-log dataset (masked)
 bash tools/sync-api-catalog.sh              # refresh the API catalog from upstream
 

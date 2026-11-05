@@ -34,7 +34,9 @@ Links to upstream only; nothing vendored. API keys are NEVER stored in this repo
 
 | Source | Function |
 |---|---|
-| haveibeenpwned.com/API/ v3 | breach search (needs key; use the range API for k-anonymity) |
+| haveibeenpwned.com/API/v3 `/breachedaccount/{email}` | email -> breach list (needs `HIBP_KEY`) |
+| haveibeenpwned.com/API/v3 `/breaches` | keyless breach-name catalog (names + dates) - verified 200 JSON |
+| api.pwnedpasswords.com/range/ | password exposure, k-anonymity, keyless - verified 200 |
 | hunter.io | company email patterns (needs key) |
 | emailrep.io | email reputation |
 
@@ -81,6 +83,21 @@ Using stolen credentials against accounts you do not own is credential stuffing 
 unauthorized access - illegal in effectively every jurisdiction. Downloaded dumps are
 malware vectors: offline VM only. Local datasets live in `leaks/` (gitignored); query
 them with `bash tools/leak-grep.sh <identifier>`.
+
+### Liveness probe (verified live 2026-11-05 ~18:55 WIB, curl from this workspace)
+
+| Endpoint | Status | Note |
+|---|---|---|
+| leak-lookup.com / dehashed.com / snusbase.com / intelx.io | 200 | paid lookup services, legal-review first |
+| aleph.occrp.org | 200 | investigative datasets |
+| haveibeenpwned.com/api/v3/breaches | 200 (JSON, keyless) | breach name/date catalog |
+| api.pwnedpasswords.com/range/ | 200 | password k-anonymity API (what breach-check.sh --pass uses) |
+| exploit.in | 200 but Cloudflare "Verify Humanity" | forum - needs browser route or archive |
+| breachdirectory.org | 403 | Cloudflare - browser route |
+| xss.is / crt.sh | timeout | unreachable from this network - retry / proxy / alternate |
+| haveibeenpwned.com/range/ | 404 / HTML | **dead path** - the k-anonymity API moved to api.pwnedpasswords.com |
+
+Re-probe anytime: `curl -s -o /dev/null -w "%{http_code}" -m 15 -A "osint-suite/1.0" <url>`
 
 ## People search / data broker (name -> profile)
 
