@@ -1,99 +1,99 @@
 ---
 name: osint-web2
-description: Web2 OSINT skill for identifiers - email, username/handle, phone, person name, business entity, domain/IP. Use when pivoting from one web2 identifier to accounts, profiles, ownership, and infrastructure. Includes matching logic (cocoklogi) for deciding whether an identifier belongs to a target. For X/Twitter-specific work use osint-x.
+description: Web2 OSINT skill for identifiers - email, username/handle, phone, person name, business entity, and domain/IP. Use when pivoting from one web2 identifier to accounts, profiles, ownership, and infrastructure, with explicit sources, matching logic, and evidence capture. For X/Twitter-specific work use osint-x; for full-name dossiers use osint-people.
 ---
 # OSINT Web2
 
-Catatan: kalau identifier-nya handle X atau nama asli yang target utamanya di X, pakai skills/osint-x/SKILL.md. Skill ini untuk web2 umum. Untuk menyambung 2+ identifier lintas domain, pakai skills/osint-correlation/SKILL.md.
+Note: if the identifier is an **X handle or a real name whose main target is on X**, use skills/osint-x/SKILL.md - it has username change, bio change, and matching logic. For full-name dossiers use skills/osint-people/SKILL.md. This skill covers general web2. To connect 2+ identifiers across domains, use skills/osint-correlation/SKILL.md.
 
 ## Agent instruction
 
-1. Baseline identifier (atribut yang bisa dicari)
-2. Pivot satu per satu: email -> akun, username -> platform, phone -> carrier/akun, nama -> profil
-3. Setiap kecocokan: beri tier pakai framework global (skills/osint/SKILL.md)
-4. Output: daftar match bertier + evidence + pivot berikutnya
+1. Baseline the identifier (searchable attributes)
+2. Pivot one at a time: email -> accounts, username -> platforms, phone -> carrier/accounts, name -> profiles
+3. Tier every match using the global framework (skills/osint/SKILL.md)
+4. Output: tiered match list + evidence + next pivots
 
 ## Email
 
-Urutan: validity -> exposure -> accounts -> entity.
+Order: validity -> exposure -> accounts -> entity.
 
-1. Validitas & deliverability: cek format/MX, lalu layanan verifikasi (sumber: docs/SOURCES.md, katalog API docs/API-CATALOG.md)
-2. Exposure: lanjut ke osint-leak (breach search) - cukup tahu "exposed atau tidak", jangan cari password
-3. Accounts: gravatar hash (MD5 email -> avatar URL), GitHub user search, whois historis yang memuat email
-4. Entity: email korporat -> domain -> registry (pinjam osint-gov)
+1. Validity & deliverability: format/MX check, then verification services (sources: docs/SOURCES.md and docs/API-CATALOG.md)
+2. Exposure: proceed to osint-leak (breach search) - just learn "exposed or not", do not hunt passwords
+3. Accounts: gravatar hash (MD5 email -> avatar URL), GitHub user search, historical whois containing the email
+4. Entity: corporate email -> domain -> registry (borrow osint-gov)
 
 ## Username / handle (non-X)
 
-Backend: blackbird (600+ platform, berbasis WhatsMyName).
+Backend: blackbird (600+ platforms, WhatsMyName-based).
 
 ```bash
 bash tools/username-hunt.sh <username>
 ```
 
-- Catat platform yang match + URL profil
-- Pivot: bio/foto -> osint-geo; handle sama di platform kripto -> osint-web3
-- Kalau handle-nya di X -> pindah ke osint-x (butuh riwayat + matching logic)
-- False positive happens: verifikasi manual tiap match sebelum dianggap satu orang
+- Record matching platforms + profile URLs
+- Pivot: bio/photo -> osint-geo; same handle on crypto platforms -> osint-web3
+- If the handle is on X -> switch to osint-x (needs history + matching logic)
+- False positives happen: verify every match manually before treating it as one person
 
 ## Phone
 
-- Tipe line (mobile/voip/fixed), carrier, negara (sumber: docs/API-CATALOG.md kategori phone)
-- Pivot: nomor -> akun chat/sosial via fitur "cari by phone" (butuh OPSEC, lihat osint-opsec)
-- Jangan asumsikan nomor = identitas; nomor bisa dipakai ulang
+- Line type (mobile/voip/fixed), carrier, country (sources: docs/API-CATALOG.md, phone category)
+- Pivot: number -> chat/social accounts via "search by phone" features (needs OPSEC, see osint-opsec)
+- Never assume number = identity; numbers get recycled
 
-## Nama orang (di luar X)
+## Person name (outside X)
 
-- Mesin pencari dengan operator: "nama" site:linkedin.com, "nama" filetype:pdf, variasi ejaan
-- Profil publik -> foto -> osint-geo
-- Kalau target utamanya di X: pakai osint-x Entry B (nama asli -> kandidat akun -> matching logic)
-- Nama + negara jelas -> osint-gov (registry direksi, court records)
+- Search engines with operators: `"name" site:linkedin.com`, `"name" filetype:pdf`, spelling variants
+- Public profiles -> photo -> osint-geo
+- If the main target is on X: use osint-x Entry B (real name -> candidate accounts -> matching logic)
+- Name + country clear -> osint-gov (directorship registry, court records)
 
 ## Domain / IP / DNS
 
-Backend: tools/domain-recon.sh + reconspider (opsional).
+Backend: tools/domain-recon.sh + reconspider (optional).
 
-1. whois (termasuk historical)
-2. Subdomain: crt.sh certificate transparency
-3. Tech fingerprint: response headers, favicon hash, JS bundle (kalau konteks ofensif, lanjut ke skill recon di hack-skills)
-4. Infra: reverse DNS, ASN, netblock tetangga
+1. whois (including historical)
+2. Subdomains: crt.sh certificate transparency
+3. Tech fingerprint: response headers, favicon hash, JS bundle (for offensive context, continue with the recon skills in hack-skills)
+4. Infrastructure: reverse DNS, ASN, neighboring netblocks
 
-## Entity / perusahaan
+## Entity / company
 
 - Corporate registry: osint-gov
-- Footprint: domain, email pattern, karyawan publik
-- Dokumen: filing, pitch deck, tender - sering bocor sebagai PDF yang bisa di-search
+- Footprint: domain, email pattern, public employees
+- Documents: filings, pitch decks, tenders - often leak as searchable PDFs
 
-## COCOKLOGI - matching identifier -> akun/orang
+## MATCHING LOGIC - identifier -> account/person
 
-### Tabel sinyal
+### Signal table
 
-| Sinyal | Tier | Catatan |
+| Signal | Tier | Note |
 |---|---|---|
-| Gravatar hash cocok antar platform (email sama) | KONFIRMASI-kuat | MD5 email -> URL avatar yang identik = email kuat sama |
-| Email exact terverifikasi di profil (bukan cuma teks bio) | KUAT | butuh bukti verifikasi (reset flow, notifikasi) |
-| Avatar perceptual hash cocok lintas platform | KUAT | bandingkan p-hash, bukan exact bytes |
-| Link personal/domain sama di bio 2+ platform | KUAT | link langka = sinyal kuat |
-| Username exact + platform niche | SEDANG | platform umum = lemah |
-| Follower/following graph overlap | KUAT | lihat 10-20 mutual teratas |
-| Display name + kota + profesi sama | SEDANG | kombinasi umum |
-| Bio text overlap > 50% | SEDANG | copy-paste bio umum |
-| Jam posting & gaya bahasa | PENDUKUNG | hanya kombinasi |
-| Handle mirip | LEMAH | handle bisa dibeli/direbut |
+| Gravatar hash match across platforms (same email) | CONFIRMED-strong | MD5 email -> identical avatar URL strongly implies same email |
+| Email verified on profile (not just bio text) | STRONG | requires verification evidence (reset flow, notification) |
+| Avatar perceptual hash match across platforms | STRONG | compare p-hash, not exact bytes |
+| Same personal link/domain in bios on 2+ platforms | STRONG | rare links are strong signals |
+| Exact username on a niche platform | MEDIUM | common platforms = weak |
+| Follower/following graph overlap | STRONG | look at the top 10-20 mutuals |
+| Display name + city + profession match | MEDIUM | common combination |
+| Bio text overlap > 50% | MEDIUM | copy-paste bios are common |
+| Posting hours & language style | SUPPORTING | only in combination |
+| Similar handle | WEAK | handles can be bought/squatted |
 
-### Aturan verdict
+### Verdict rules
 
-- confirmed: gravatar cocok / email terverifikasi
-- probable: >= 2 KUAT (avatar pHash + link personal, dst)
-- possible: 1 KUAT atau >= 2 SEDANG
-- rejected: gravatar beda + join date beda jauh + follower graph nol overlap
+- confirmed: gravatar match / verified email
+- probable: >= 2 STRONG (e.g. avatar pHash + personal link)
+- possible: 1 STRONG or >= 2 MEDIUM
+- rejected: different gravatar + join dates far apart + zero follower graph overlap
 
-### Jebakan umum
+### Common traps
 
-- Email corporat yang dipakai ulang setelah karyawan keluar
-- Nomor telepon yang didaur ulang operator
-- Nama umum (bukan sinyal)
-- Handle pop Culture yang diburu banyak orang (handle mirip bukan hubungan)
+- Corporate emails reused after an employee leaves
+- Phone numbers recycled by carriers
+- Common names (not a signal)
+- Popular culture handles chased by many people (similar handle != relationship)
 
 ## Evidence
 
-Tiap temuan wajib: URL sumber, waktu akses UTC, hash screenshot kalau halaman bisa berubah. Simpan di luar repo ini - repo ini publik.
+Every finding requires: source URL, UTC access time, screenshot hash when the page can change. Store outside this repo - this repo is public.

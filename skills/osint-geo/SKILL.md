@@ -1,77 +1,77 @@
 ---
 name: osint-geo
-description: GEOINT and image OSINT skill - reverse image search, face search awareness, geolocation reasoning, imagery verification. Includes matching logic for deciding whether an image was actually taken at a claimed location, with confidence tiers.
+description: GEOINT and image OSINT skill - reverse image search, face search awareness, geolocation reasoning, and imagery verification. Includes matching logic for deciding whether an image was actually taken at a claimed location, with confidence tiers.
 ---
 # OSINT GEOINT
 
 ## Agent instruction
 
-1. EXIF/metadata dulu (kalau ada = KONFIRMASI)
-2. Reverse image search multi-engine
-3. Geolocation reasoning: objek besar -> objek kecil -> bayangan/matahari -> cuaca
-4. Verifikasi 2+ fitur independen di imagery; beri tier per fitur
-5. Output: koordinat perkiraan + daftar fitur pembanding + tier + confidence
+1. EXIF/metadata first (if present = CONFIRMED signal)
+2. Reverse image search across multiple engines
+3. Geolocation reasoning: large objects -> small objects -> shadows/sun -> weather
+4. Verify 2+ independent features in imagery; tier each feature
+5. Output: estimated coordinates + comparison feature list + tier + confidence
 
 ## 1. Reverse image search
 
-- Engine: Google Lens, Yandex Images (paling kuat untuk wajah/objek lokal), TinEye, Bing Visual Search
-- Varian: crop objek spesifik (rambu, plang, bangunan), cari dengan resize/rotate, bandingkan hasil antar-engine
-- Catat: mana engine yang match, URL sumber asli, tanggal publish (bisa lebih tua dari post yang kita lihat)
+- Engines: Google Lens, Yandex Images (strongest for faces/local objects), TinEye, Bing Visual Search
+- Variants: crop specific objects (signs, plates, buildings), resize/rotate, compare across engines
+- Record: which engine matched, original source URL, publish date (may predate the post you saw)
 
 ## 2. Face search
 
-- Layanan face search komersial ada tapi batas legal/etik ketat (biometric privacy: BIPA, GDPR)
-- Default stance: jangan face-search orang privat tanpa dasar; untuk riset, pakai sumber publik + verifikasi manual
-- Kalau dipakai: dokumentasikan dasar hukum di catatan kasus
+- Commercial face-search services exist but legal/ethical limits are strict (biometric privacy: BIPA, GDPR)
+- Default stance: do not face-search private individuals without a basis; for research, use public sources + manual verification
+- If used: document the legal basis in the case file
 
 ## 3. Geolocation reasoning
 
-Urutan analisa foto:
-1. EXIF/metadata - koordinat, device, timestamp (sering sudah di-strip; kalau ada, simpan hash-nya)
-2. Objek besar: bentuk bangunan, pegunungan, garis pantai, jenis vegetasi
-3. Objek kecil: rambu (bahasa/format nomor), plafon listrik, stopkontak, mobil (plate format, sisi kemudi)
-4. Bayangan & matahari: arah + panjang bayangan -> perkiraan waktu & arah matahari (suncalc)
-5. Cuaca: kondisi cuaca di foto vs record historis
+Analysis order for a photo:
+1. EXIF/metadata - coordinates, device, timestamp (often stripped; if present, hash it)
+2. Large objects: building shapes, mountain ranges, coastlines, vegetation type
+3. Small objects: signs (language/number format), utility poles, outlets, vehicles (plate format, steering side)
+4. Shadows & sun: direction + length of shadows -> estimated time and sun position (suncalc)
+5. Weather: conditions in the photo vs historical records
 
-- Imagery: Mapillary (street-level crowdsourced), Sentinel/Landsat (perubahan lahan), Google Earth historical
-- Verifikasi: cari 2+ fitur independen yang cocok sebelum klaim lokasi
+- Imagery: Mapillary (crowdsourced street-level), Sentinel/Landsat (land change), Google Earth historical
+- Verification: find 2+ independent matching features before claiming a location
 
-## COCOKLOGI - apakah foto diambil di lokasi X?
+## MATCHING LOGIC - was this photo taken at location X?
 
-| Sinyal | Tier | Catatan |
+| Signal | Tier | Note |
 |---|---|---|
-| GPS EXIF + timestamp konsisten | KONFIRMASI | verifikasi device/timestamp bisa dipalsukan, tapi default kuat |
-| EXIF device + foto lain dari device sama di lokasi X | KUAT | |
-| Landmark unik + nama jalan readable + plate format | KUAT | 3 fitur kecil independen |
-| 2+ fitur kecil cocok (rambu bahasa + sisi kemudi + stopkontak tipe) | KUAT | |
-| Sun angle konsisten dengan lokasi+waktu yang diklaim | SEDANG | men-support atau men-ontradiksi |
-| Vegetasi/iklim cocok | PENDUKUNG | |
-| "Mirip" / kesan visual | LEMAH | bukan sinyal |
+| GPS EXIF + consistent timestamp | CONFIRMED | device/timestamp can be spoofed, but strong by default |
+| EXIF device + other photos from the same device at location X | STRONG | |
+| Unique landmark + readable street name + plate format | STRONG | three independent small features |
+| 2+ matching small features (sign language + steering side + outlet type) | STRONG | |
+| Sun angle consistent with the claimed location and time | MEDIUM | supports or contradicts |
+| Vegetation/climate match | SUPPORTING | |
+| "Looks like it" / visual impression | WEAK | not a signal |
 
-### Aturan verdict
+### Verdict rules
 
-- confirmed: EXIF GPS (tanpa indikasi manipulasi), atau landmark unik + 2+ fitur kecil
-- probable: 2+ fitur kecil independen cocok
-- possible: 1 fitur kecil atau landmark umum
-- rejected: kontradiksi keras - sun angle beda arah, plate format beda negara, vegetasi mustahil untuk iklim, landmark ternyata di lokasi lain
+- confirmed: EXIF GPS (no manipulation indicators), or unique landmark + 2+ small features
+- probable: 2+ independent small features match
+- possible: 1 small feature or a generic landmark
+- rejected: hard contradiction - sun angle in the wrong direction, plate format from another country, impossible vegetation for the climate, landmark actually elsewhere
 
-### Kontradiksi yang harus dicek
+### Contradictions to check
 
-- Bayangan vs waktu yang diklaim (pagi vs sore = arah berlawanan)
-- Sisi kemudi mobil vs negara (kiri vs kanan)
-- Format plate / bahasa rambu vs negara
-- Musim vegetasi vs tanggal foto
-- Cuaca di foto vs record historis lokasi tersebut
+- Shadows vs claimed time (morning vs evening = opposite directions)
+- Vehicle steering side vs country (left vs right)
+- Plate format / sign language vs country
+- Vegetation season vs photo date
+- Weather in the photo vs historical records for that location
 
-### Jebakan umum
+### Common traps
 
-- Foto lama di-post ulang dengan klaim lokasi baru (cek reverse image untuk sumber asli + tanggal)
+- Old photos re-posted with a new location claim (check reverse image for the original source + date)
 - AI-generated / edited scenery
-- Landmark yang punya "kembaran" di negara lain (menara, patung, gereja yang sama)
-- Street View imagery yang sudah usang vs kondisi sekarang
+- Landmarks with "twins" in other countries (towers, statues, churches)
+- Street View imagery that is stale vs current conditions
 
 ## 4. Verification discipline
 
-- Klaim lokasi = high confidence hanya kalau ada match visual yang bisa diulang orang lain
-- Simpan: URL imagery, koordinat perkiraan, daftar fitur pembanding, screenshot
-- Foto bisa dipindahkan/diedit: latihan selalu "cari bukti foto diambil di lokasi X", bukan "fotonya mirip lokasi X"
+- A location claim reaches high confidence only when a visual match can be reproduced by someone else
+- Record: imagery URLs, estimated coordinates, comparison feature list, screenshots
+- Photos can be moved or edited: the exercise is always "find evidence the photo was taken at location X", not "the photo resembles location X"

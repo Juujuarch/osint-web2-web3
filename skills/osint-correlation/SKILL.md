@@ -1,85 +1,85 @@
-﻿---
+---
 name: osint-correlation
 description: Cross-domain identity correlation skill. Use when you have two or more identifiers (email, X handle, username, phone, wallet, name, photo, domain) and need to decide whether they belong to the same entity - with signal tiers, bridge-identifier logic, graph-based confidence, and contradiction handling.
 ---
-# OSINT Correlation (cocoklogi lintas domain)
+# OSINT Correlation (matching logic across domains)
 
-Skill ini jawab pertanyaan inti investigasi: **"identifier A dan identifier B orang/entitas yang sama?"** Domain skill lain mengumpulkan atribut; skill ini memutuskan.
+This skill answers the core investigative question: **"are identifier A and identifier B the same entity?"** Domain skills collect attributes; this skill decides.
 
 ## Agent instruction
 
-Kalau diminta menyambungkan 2+ identifier:
-1. Kumpulkan atribut tiap identifier via skill domain masing-masing
-2. Cari bridge identifier (penghubung) di daftar bawah
-3. Bangun graph: node = identifier, edge = bukti bertier
-4. Hitung verdict pakai aturan path strength
-5. Output: graph + tabel edge + verdict per pasangan + daftar kontradiksi
+When asked to connect 2+ identifiers:
+1. Collect attributes for each identifier via the respective domain skill
+2. Look for bridge identifiers (see the table below)
+3. Build the graph: nodes = identifiers, edges = tiered evidence
+4. Compute verdicts using path-strength rules
+5. Output: graph + edge table + verdict per pair + contradiction list
 
-## Bridge identifier (penghubung antar domain)
+## Bridge identifiers (connectors across domains)
 
-| Dari | Ke | Bridge | Tier bridge |
+| From | To | Bridge | Bridge tier |
 |---|---|---|---|
-| Email | Akun manapun | gravatar hash (MD5 email -> avatar) | KUAT |
-| Email | X handle | breach/paste record, gravatar | KUAT |
-| X handle | Wallet | link di bio, ENS, tweet pinned | SEDANG-KUAT |
-| X handle | Email | gravatar, leak record | KUAT |
-| Wallet | X handle | ENS reverse, tx memo, ENS profile sosial | SEDANG |
-| Wallet | Wallet | common-input, gas funder, bridge tx | KUAT (lihat osint-web3) |
-| Phone | Email/akun | breach record, fitur "cari by phone" | KUAT |
-| Nama | Akun | search + verifikasi atribut | SEDANG |
-| Foto | Orang | avatar pHash, face match | KUAT |
-| Foto | Lokasi | landmark, EXIF | KONFIRMASI (EXIF GPS) |
-| Domain | Email | whois historis | KUAT |
-| Domain | Wallet | whois + on-chain funding? (lemah, hati-hati) | LEMAH |
+| Email | Any account | gravatar hash (MD5 email -> avatar) | STRONG |
+| Email | X handle | breach/paste record, gravatar | STRONG |
+| X handle | Wallet | bio link, ENS, pinned tweet | MEDIUM-STRONG |
+| X handle | Email | gravatar, leak record | STRONG |
+| Wallet | X handle | ENS reverse, tx memo, ENS social profile | MEDIUM |
+| Wallet | Wallet | common-input, gas funder, bridge tx | STRONG (see osint-web3) |
+| Phone | Email/account | breach record, "search by phone" feature | STRONG |
+| Name | Account | search + attribute verification | MEDIUM |
+| Photo | Person | avatar pHash, face match | STRONG |
+| Photo | Location | landmark, EXIF | CONFIRMED (GPS EXIF) |
+| Domain | Email | historical whois | STRONG |
+| Domain | Wallet | whois + on-chain funding? (weak, be careful) | WEAK |
 
 ## Graph model
 
-- **Node**: identifier (email, handle, wallet, phone, nama, foto, domain)
-- **Edge**: bukti hubungan, dengan tier (KONFIRMASI/KUAT/SEDANG/PENDUKUNG/LEMAH)
-- **Path strength**: edge terlemah di sepanjang path menentukan tier path
+- **Node**: an identifier (email, handle, wallet, phone, name, photo, domain)
+- **Edge**: evidence of a relationship, with a tier (CONFIRMED/STRONG/MEDIUM/SUPPORTING/WEAK)
+- **Path strength**: the weakest edge along the path determines the path's tier
 
-## Aturan verdict (lintas domain)
+## Verdict rules (cross-domain)
 
-1. **confirmed**: ada path yang memuat >= 1 edge KONFIRMASI
-2. **probable**: path terkuat KUAT (edge terlemah KUAT), atau >= 2 edge KUAT independen
-3. **possible**: edge terkuat SEDANG
-4. **rejected**: ada kontradiksi keras di sepanjang path
+1. **confirmed**: a path containing >= 1 CONFIRMED edge
+2. **probable**: strongest path is STRONG (weakest edge STRONG), or >= 2 independent STRONG edges
+3. **possible**: strongest edge is MEDIUM
+4. **rejected**: a hard contradiction along the path
 
-**Prinsip kunci**: cluster identitas = himpunan node yang saling terhubung via path >= probable. Node terisolasi = possible, jangan di-merge.
+**Key principle**: an identity cluster = the set of nodes connected by paths of >= probable. Isolated nodes stay "possible" and are never merged.
 
-## Kontradiksi keras (auto-reject)
+## Hard contradictions (auto-reject)
 
-| Kontradiksi | Kenapa |
+| Contradiction | Why |
 |---|---|
-| user ID X berbeda | user ID kekal |
-| GPS EXIF beda kota di timestamp yang sama | mustahil |
-| join date beda > 1 tahun pada akun "yang sama" | akun berbeda |
-| registry ID (NPWP/LEI/company number) beda | entity berbeda |
-| follower graph nol overlap pada akun sosial | kuat indikasi beda |
-| hash kredensial tidak cocok | bukan akun yang sama |
+| Different X user IDs | user IDs are immutable |
+| GPS EXIF in different cities at the same timestamp | impossible |
+| Join dates more than a year apart on the "same" account | different accounts |
+| Different registry IDs (NPWP/LEI/company number) | different entities |
+| Zero follower graph overlap on social accounts | strong indicator of different people |
+| Credential hash mismatch | not the same account |
 
-## Kontradiksi lunak (turunkan tier + catat)
+## Soft contradictions (downgrade one tier + record)
 
-- Timezone/jam posting beda (bisa VPN/palsu)
-- Gaya bahasa berubah (bisa ghostwriter/pivot)
-- Avatar ganti (wajar)
-- Handle berubah (wajar - lihat osint-x)
+- Different timezone/posting hours (can be VPN or faked)
+- Changed writing style (can be a ghostwriter or pivot)
+- Replaced avatar (normal)
+- Changed handle (normal - see osint-x)
 
 ## Output format
 
 ```
-## Cluster identitas (verdict: confirmed/probable/possible)
-Node: <identifier list>
+## Identity cluster (verdict: confirmed/probable/possible)
+Nodes: <identifier list>
 Edges:
-  <A> --[TIER: bukti, sumber, timestamp]--> <B>
-Verdict: <x> karena <alasan tier>
-Kontradiksi: <daftar / tidak ada>
-Pivot berikutnya: <skill + langkah>
+  <A> --[TIER: evidence, source, timestamp]--> <B>
+Verdict: <x> because <tier reasoning>
+Contradictions: <list / none>
+Next pivots: <skill + step>
 ```
 
-## Anti-pattern
+## Anti-patterns
 
-- Merge cluster karena 1 sinyal LEMAH (handle mirip)
-- Lupa catat kontradiksi yang sudah dicek dan ternyata bersih
-- Klaim confirmed dari >= 2 SEDANG (itu possible)
-- Pake "feels right" sebagai tier
+- Merging clusters on a single WEAK signal (similar handle)
+- Failing to record contradictions that were checked and found clean
+- Claiming confirmed from >= 2 MEDIUM signals (that is possible)
+- Using "feels right" as a tier

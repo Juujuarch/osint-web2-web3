@@ -1,118 +1,119 @@
 # OSINT WEB2 & WEB3
 
-Suite skill OSINT (Open-Source Intelligence) untuk investigasi **web2** (email, phone, username, people, entity, domain), **X/Twitter** (username change, bio change, matching logic), dan **web3** (wallet attribution, clustering, cross-chain pivot), plus **leak/breach**, **gov records**, **GEOINT**, **correlation lintas domain**, dan **OPSEC**.
+An OSINT (Open-Source Intelligence) skill suite for **web2** investigations (email, phone, username, people, entity, domain), **X/Twitter** (username change, bio change, matching logic), **data leak / breach** exposure and enrichment, **web3** (wallet attribution, clustering, cross-chain pivot), **gov & corporate records**, **GEOINT**, **cross-domain correlation**, and **OPSEC**.
 
-Dirancang sebagai **agent skill set**: setiap skill punya frontmatter `name` + `description` (trigger), agent instruction, metodologi detail, dan **section COCOKLOGI** (logika pencocokan bertier). Semua skill memakai satu framework confidence global.
+Designed as an **agent skill set**: every skill has `name` + `description` frontmatter (triggers), an agent instruction block, detailed methodology, and a **MATCHING LOGIC** section with signal tiers. All skills share one global confidence framework.
 
-Prinsip desain: **router -> domain skill -> backend tool**. Satu entry point (`osint`), tiap domain punya workflow + sumber eksplisit, backend tool opsional dipasang terpisah dan tidak pernah menyimpan kredensial di repo ini.
+Design principle: **router -> domain skill -> backend tool**. One entry point (`osint`), each domain has an explicit workflow and sources, optional backend tools installed separately, and no credentials are ever stored in this repo.
 
-## Isi repo
+## Repository layout
 
-| Path | Fungsi |
+| Path | Function |
 |---|---|
-| `skills/osint/` | Router + **framework confidence global** |
-| `skills/osint-correlation/` | Cocoklogi lintas domain: bridge identifier, graph, verdict |
+| `skills/osint/` | Router + **global confidence framework** |
+| `skills/osint-people/` | Full name -> dossier: phone, address, employment, official IDs (legal-gated) |
 | `skills/osint-x/` | X/Twitter: username change, bio change, matching logic |
-| skills/osint-people/ | Nama lengkap -> dossier: phone, alamat, pekerjaan, identifier resmi (legal-gated) |
-| `skills/osint-web2/` | Identitas & web: email, phone, username, people, entity, domain |
+| `skills/osint-web2/` | Identity & web: email, phone, username, people, entity, domain |
 | `skills/osint-web3/` | On-chain: wallet attribution, clustering, cross-chain (read-only) |
-| `skills/osint-leak/` | Breach exposure, combolist, paste, darknet monitoring |
-| `skills/osint-gov/` | Sanctions, corporate registry, court, procurement, document leaks |
+| `skills/osint-leak/` | Breach exposure, k-anonymity search, leak enrichment, combolist, darknet |
+| `skills/osint-gov/` | Sanctions, corporate registry, court records, procurement, document leaks |
 | `skills/osint-geo/` | Reverse image search, face search, geolocation |
-| `skills/osint-opsec/` | Attribution hygiene, sock puppet, evidence chain, counter-matching |
-| `tools/` | Installer backend, wrapper, secret scanner, X history, API catalog sync |
-| `docs/` | Workflow per skenario, daftar sumber, katalog API |
+| `skills/osint-opsec/` | Attribution hygiene, sock puppets, evidence chain, counter-matching |
+| `skills/osint-correlation/` | Cross-domain matching: bridge identifiers, graph, verdicts |
+| `tools/` | Backend installer, wrappers, secret scanner, X history, breach check, API catalog sync |
+| `docs/` | Scenario workflows, source list, API catalog |
 
-## Framework confidence (inti dari semua skill)
+## Confidence framework (core of every skill)
 
-Setiap klaim "A = B" wajib bertier:
+Every claim "A = B" must be tiered:
 
-| Tier | Arti | Contoh |
+| Tier | Meaning | Examples |
 |---|---|---|
-| KONFIRMASI | identifier kekal identik | user ID X, tweet ID->authorship, GPS EXIF, registry ID, hash cocok |
-| KUAT | atribut langka cocok | avatar pHash, link personal, follower graph overlap, common-input on-chain |
-| SEDANG | atribut umum cocok | display name, bio overlap, nama+domisili |
-| PENDUKUNG | pola perilaku | gaya bahasa, jam posting, timing tx |
-| LEMAH | kemiripan dangkal | handle mirip, nama umum |
+| KONFIRMASI (CONFIRMED signal) | immutable identifier identical | X user ID, tweet ID -> authorship, GPS EXIF, registry ID, hash match |
+| KUAT (STRONG) | rare attribute match | avatar perceptual hash, personal link, follower graph overlap, on-chain common-input |
+| SEDANG (MEDIUM) | common attribute match | display name, bio overlap, name + city |
+| PENDUKUNG (SUPPORTING) | behavioral pattern | writing style, posting hours, tx timing |
+| LEMAH (WEAK) | surface similarity | similar handle, common name |
 
-Verdict: **confirmed** (>=1 KONFIRMASI) / **probable** (>=2 KUAT) / **possible** (1 KUAT atau >=2 SEDANG) / **rejected** (kontradiksi keras). Klaim tanpa tier bukan temuan.
+Verdicts: **confirmed** (>=1 CONFIRMED signal) / **probable** (>=2 STRONG) / **possible** (1 STRONG or >=2 MEDIUM) / **rejected** (hard contradiction). An untiered claim is not a finding.
 
 ## Quick start
 
 ```bash
-# backend opsional (blackbird = username/email, reconspider = IP/domain/org)
+# optional backends (blackbird = username/email, reconspider = IP/domain/org)
 bash tools/install-backends.sh
 
-# wrapper siap pakai
-bash tools/username-hunt.sh <username>      # cari username di 600+ platform
-bash tools/domain-recon.sh <domain>         # whois/DNS/subdomain/headers
-bash tools/x-history.sh <handle>            # riwayat profil X via arsip publik
-bash tools/sync-api-catalog.sh              # refresh katalog API dari upstream
+# ready-to-use wrappers
+bash tools/username-hunt.sh <username>      # search a username across 600+ platforms
+bash tools/domain-recon.sh <domain>         # whois/DNS/subdomains/headers
+bash tools/x-history.sh <handle>            # X profile history via public archives
+bash tools/breach-check.sh <email>          # breach exposure check (k-anonymity, no key)
+bash tools/sync-api-catalog.sh              # refresh the API catalog from upstream
 
-# sebelum commit/push apa pun
+# before any commit or push
 bash tools/scan-secrets.sh
 ```
 
-Skill dibaca langsung dari `skills/*/SKILL.md` atau di-load sebagai Claude/Codex skill folder.
+Skills are read directly from `skills/*/SKILL.md` or loaded as a Claude/Codex skill folder.
 
-## Skill domain - ringkas
+## Domain skills - overview
 
 ### osint (router)
-Titik masuk. Petakan identifier (email / username / handle X / wallet / domain / foto / nama) ke skill domain yang tepat, lalu ke sumber konkret. Memuat framework confidence global.
-
-### osint-correlation
-Cocoklogi lintas domain: tabel bridge identifier (email<->handle<->wallet<->phone<->foto), graph node+edge bertier, path strength = edge terlemah, aturan kontradiksi, output format graph+verdict.
-
-### osint-x
-Kasus khas: cuma punya username X atau nama asli. User ID numerik kekal, tweet lama -> authorship handle baru, arsip Wayback/archive.today, timeline bio, matching logic confirmed/probable/possible/rejected.
+Entry point. Maps the starting identifier (email / username / X handle / wallet / domain / photo / full name) to the right domain skill and sources. Carries the global confidence framework.
 
 ### osint-people
-Kasus khas: cuma punya nama lengkap, butuh output detail (phone, alamat, NIK, dll). Phase 1 candidate discovery -> Phase 2 enrichment (kontak/alamat/kerja/digital/identifier resmi) -> Phase 3 cocoklogi. NIK = legal gate (UU PDP). Output: dossier template bertier.
+Typical case: you only have someone's full name and need a detailed dossier (phone, address, employment, digital footprint, official IDs). Phase 1 candidate discovery -> Phase 2 attribute enrichment -> Phase 3 matching logic. Official IDs (NIK etc.) are legal-gated (UU PDP / GDPR). Output: tiered dossier template.
+
+### osint-correlation
+Cross-domain matching logic: bridge identifier table (email <-> handle <-> wallet <-> phone <-> photo), node/edge graph with tiers, path strength = weakest edge, contradiction rules, graph+verdict output format.
+
+### osint-x
+Typical case: only an X username or a real name. Immutable numeric user ID, old tweet -> current authorship, Wayback/archive.today archives, bio timeline, matching verdicts confirmed/probable/possible/rejected.
 
 ### osint-web2
-Email (validity -> exposure -> accounts -> entity), username (blackbird 600+ platform), phone, people, domain/IP/DNS, entity. COCOKLOGI: gravatar, avatar pHash, link personal, follower graph overlap.
+Email (validity -> exposure -> accounts -> entity), username (blackbird, 600+ platforms), phone, people, domain/IP/DNS, entity. MATCHING LOGIC: gravatar, avatar pHash, personal links, follower graph overlap.
 
 ### osint-web3
-Wallet attribution (label, first funding, counterparty, ENS), clustering (common-input, gas funder, deposit pattern, bridge), cross-chain pivot, holder/token graph. Read-only. COCOKLOGI: signed message = KONFIRMASI, verdict atribusi bertier.
+Wallet attribution (labels, first funding, counterparty, ENS), clustering (common-input, gas funder, deposit pattern, bridge), cross-chain pivot, holder/token graph. Read-only. MATCHING LOGIC: signed message = CONFIRMED signal; tiered attribution verdicts.
 
 ### osint-leak
-Breach search (k-anonymity), paste, combolist awareness, darknet watch, self-monitoring. COCOKLOGI: hash cocok = KONFIRMASI; tanggal breach vs umur identifier bisa jadi kontradiksi.
+K-anonymity breach search, leak-record enrichment (phone/address/IDs from breach data), paste and combolist awareness, darknet market watch, self-monitoring. MATCHING LOGIC: hash match = CONFIRMED; breach date vs identifier age as contradiction. Legal gate for third-party PII.
 
 ### osint-gov
-Sanctions (OFAC/EU/UN), corporate registry (OpenCorporates, EDGAR), court (CourtListener, PACER), procurement (SAM.gov, TED), ICIJ/OCCRP. COCOKLOGI: entity resolution - registry ID/LEI = KONFIRMASI, transliterasi & nominee officer = jebakan.
+Sanctions (OFAC/EU/UN), corporate registry (OpenCorporates, EDGAR), court records (CourtListener, PACER), procurement (SAM.gov, TED), ICIJ/OCCRP. MATCHING LOGIC: entity resolution - registry ID/LEI = CONFIRMED signal; transliteration and nominee-officer traps.
 
 ### osint-geo
-Reverse image (Lens, Yandex, TinEye), face search (batas legal), geolocation reasoning (bayangan, rambu, mobil, vegetasi). COCOKLOGI: EXIF GPS = KONFIRMASI, sun-angle/plate/vegetasi bisa jadi kontradiksi.
+Reverse image (Lens, Yandex, TinEye), face search (legal limits), geolocation reasoning (shadows, signage, vehicles, vegetation). MATCHING LOGIC: EXIF GPS = CONFIRMED; sun angle / plate format / vegetation as contradictions.
 
 ### osint-opsec
-Posture investigasi, sock puppet, evidence chain, storage terenkripsi. **Counter-matching**: audit vektor linkability persona (avatar reuse, stylometry, fingerprint, metadata) sebelum sesi sensitif.
+Investigation posture, sock puppets, evidence chain, encrypted storage. **Counter-matching**: audit persona linkability vectors (avatar reuse, stylometry, fingerprint, metadata) before sensitive sessions.
 
 ## Backend tools
 
-| Tool | Fungsi | Install |
+| Tool | Function | Install |
 |---|---|---|
-| blackbird | username/email search 600+ platform | `bash tools/install-backends.sh` |
+| blackbird | username/email search across 600+ platforms | `bash tools/install-backends.sh` |
 | reconspider | IP/email/domain/org scan + dashboard | `bash tools/install-backends.sh` |
 
-Repo ini tidak pernah menyimpan API key - semua key masuk via environment variable yang tidak di-commit (lihat `.gitignore`).
+This repo never stores API keys - all keys come from environment variables that are gitignored (see `.gitignore`).
 
-## Keamanan
+## Security
 
-- Baca [SECURITY.md](SECURITY.md): kebijakan kredensial + OPSEC minimum
-- `tools/scan-secrets.sh` wajib jalan sebelum commit/push
-- Repo ini publik: **anggap semua isinya bisa dibaca siapa saja**
+- Read [SECURITY.md](SECURITY.md): credential policy + minimum OPSEC
+- `tools/scan-secrets.sh` must pass before any commit/push
+- This repo is public: **assume everything in it is readable by anyone**
 
-## Legal & etik
+## Legal & ethics
 
-Suite ini untuk OSINT pada target yang kamu punya dasar legal (aset sendiri, riset keamanan berizin, riset publik, jurnalisme dengan dasar publik). Kepatuhan ToS platform dan hukum yurisdiksi masing-masing tetap tanggung jawab pengguna. Lihat `skills/osint-opsec/SKILL.md`.
+This suite is for OSINT on targets where you have a legal basis (your own assets, authorized security research, public-interest research, journalism with a public basis). Compliance with platform ToS and local law remains the user's responsibility. See `skills/osint-opsec/SKILL.md`.
 
 ## Roadmap
 
 - [ ] Skill: telegram/discord channel OSINT
 - [ ] Skill: image EXIF/metadata forensics
-- [ ] Integrasi backend: SpiderFoot
-- [ ] Template laporan investigasi (evidence-first)
+- [ ] Backend integration: SpiderFoot
+- [ ] Investigation report template (evidence-first)
 
 ## License
 
-MIT - lihat [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).

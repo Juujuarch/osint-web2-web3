@@ -1,84 +1,93 @@
-# Workflow per Skenario
+# Scenario Workflows
 
-Semua workflow: OPSEC -> domain skill -> correlation -> evidence. Setiap klaim pencocokan bertier (framework global di skills/osint/SKILL.md).
+All workflows: OPSEC -> domain skill -> correlation -> evidence. Every matching claim is tiered (global framework in skills/osint/SKILL.md).
 
-## 1. Nama lengkap -> dossier (phone, alamat, NIK, dll)
+## 1. Full name -> dossier (phone, address, NIK, etc.)
 
-1. osint-opsec: posture + legal gate (dasar hukum untuk data sensitif?)
-2. osint-people Phase 1: candidate discovery (search operator, people-search, registry, sosial, akademik)
-3. Phase 2 enrichment per kandidat: phone (people-search/breach/dokumen publik), alamat (registry/court/dokumen), pekerjaan, jejak digital, identifier resmi (KANAL LEGAL ONLY untuk NIK)
-4. Phase 3 cocoklogi: tier tiap atribut, verdict per kandidat
-5. Kalau ada identifier lain yang ketemu (email/phone/username): sambungkan via osint-correlation
-6. Output: dossier pakai template (ringkasan verdict, per-kandidat bertier, evidence hash, tindak lanjut)
+1. osint-opsec: posture + **legal gate** (legal basis for sensitive data?)
+2. osint-people Phase 1: candidate discovery (search operators, people-search, registry, social, academic)
+3. Phase 2 enrichment per candidate: phone (people-search/breach/public documents), address (registry/court/documents), employment, digital footprint, official identifiers (LEGAL CHANNEL ONLY for NIK)
+4. Phase 3 matching logic: tier each attribute, verdict per candidate
+5. If other identifiers surface (email/phone/username): connect them via osint-correlation
+6. Output: dossier using the template (verdict summary, tiered per-candidate profile, hashed evidence, next steps)
 
-## 2. Email -> akun & eksposur
+## 2. Email -> accounts & exposure
 
-1. osint-opsec: siapkan posture
-2. osint-web2: validitas/MX -> gravatar -> GitHub search
-3. osint-leak: breach search (k-anonymity) -> catat nama breach + field
-4. osint-gov: kalau email korporat -> domain -> registry
-5. Output: daftar akun bertier, status eksposur, entity terkait
+1. osint-opsec: prepare posture
+2. osint-web2: validity/MX -> gravatar -> GitHub search
+3. osint-leak: breach search (k-anonymity) -> record breach names + fields
+4. osint-gov: corporate email -> domain -> registry
+5. Output: tiered account list, exposure status, related entities
 
-## 3. Username (non-X) -> orang
+## 3. Username (non-X) -> person
 
 1. osint-web2: `bash tools/username-hunt.sh <username>`
-2. Verifikasi manual tiap match (false positive)
-3. osint-geo: foto profil -> reverse search
-4. osint-leak: handle muncul di paste/dump?
-5. Output: peta platform -> identitas kandidat (confidence per platform)
+2. Verify each match manually (false positives)
+3. osint-geo: profile photo -> reverse search
+4. osint-leak: does the handle appear in pastes/dumps?
+5. Output: platform map -> candidate identity (confidence per platform)
 
-## 4. Username X -> riwayat & identitas
+## 4. X username -> history & identity
 
-1. osint-opsec: siapkan posture (fase arsip = pasif)
-2. osint-x Entry A: baseline profil sekarang (display name, bio, join date, avatar hash, pinned)
-3. `bash tools/x-history.sh <handle>` -> snapshot arsip
-4. Bangun timeline: tanggal | handle | display name | bio | avatar | link | sumber
-5. Deteksi change: bio berubah; handle beda -> cek USER ID (`pbs.twimg.com/profile_images/<USER_ID>/...`); tweet lama -> authorship = handle baru
-6. Handle lama -> `bash tools/x-history.sh <handle-lama>` -> perpanjang timeline
-7. Pivot: link bio -> osint-web2, avatar -> osint-geo, handle kripto -> osint-web3
-8. Output: timeline + daftar change + evidence
+1. osint-opsec: prepare posture (archive phase is passive)
+2. osint-x Entry A: baseline current profile (display name, bio, join date, avatar hash, pinned)
+3. `bash tools/x-history.sh <handle>` -> archived snapshots
+4. Build the timeline: date | handle | display name | bio | avatar | link | source
+5. Detect changes: bio changes; different handles -> check the USER ID (`pbs.twimg.com/profile_images/<USER_ID>/...`); old tweet -> current authorship
+6. Old handle -> `bash tools/x-history.sh <old-handle>` -> extend the timeline
+7. Pivot: bio link -> osint-web2, avatar -> osint-geo, crypto handle -> osint-web3
+8. Output: timeline + change list with date bounds + evidence
 
-## 5. Nama asli -> akun X (tanpa handle awal)
+## 5. Real name -> X account (no starting handle)
 
-1. osint-x Entry B: kandidat (`"Nama Lengkap" site:x.com`, Google/Bing, people search)
-2. Baseline tiap kandidat (profil + arsip)
-3. Matching logic: konfirmasi (user ID sama / tweet lama->authorship), kuat (avatar, bio/link, follower graph, join date)
-4. Verdict per kandidat; probable+ -> lanjut workflow #4
-5. Output: tabel kandidat x sinyal x verdict
+1. osint-x Entry B: candidates (`"Full Name" site:x.com`, Google/Bing, people search)
+2. Baseline each candidate (profile + archives)
+3. Matching logic: CONFIRMED (same user ID / old tweet -> authorship), STRONG (avatar, bio/link, follower graph, join date)
+4. Verdict per candidate; probable+ -> continue with workflow #4
+5. Output: candidate x signal x verdict table
 
-## 6. Cek kebocoran untuk aset sendiri
+## 6. Leak/breach exposure check for owned assets
 
-1. osint-leak self-monitoring: email/domain di breach DB, paste, crt.sh
-2. COCOKLOGI: hash cocok = confirmed; nama doang = possible
-3. Kalau exposed: rotate kredensial, cek scope
-4. Dokumentasikan timeline + tindakan
+1. osint-leak self-monitoring: `bash tools/breach-check.sh <email>` + paste sites + crt.sh
+2. MATCHING LOGIC: hash match = confirmed; name alone = possible
+3. If exposed: rotate credentials, check the scope
+4. Document the timeline + actions taken
 
-## 7. Perusahaan -> profil resmi
+## 7. Breach data -> person details (enrichment)
 
-1. osint-gov: registry (officers, address, filing) -> sanctions check
+1. Legal gate: documented basis for processing third-party PII
+2. osint-leak section 2: extract fields (email, phone, address, DOB, IDs) from records
+3. Validate before use: phone via carrier lookup, address via registry/public docs, email via deliverability
+4. Freshness + dedupe: check breach dates, count each record once
+5. MATCHING LOGIC before attributing any record to the target
+6. Output: enrichment rows with tiers + sources + legal-basis note
+
+## 8. Company -> official profile
+
+1. osint-gov: registry (officers, address, filings) -> sanctions check
 2. osint-web2: domain footprint, email pattern
 3. osint-gov: procurement/tender history
-4. Output: profil entity + officer network + flag sanctions (bertier)
+4. Output: entity profile + officer network + sanctions flags (tiered)
 
-## 8. Foto -> lokasi
+## 9. Photo -> location
 
 1. osint-geo: EXIF -> reverse image (Lens, Yandex, TinEye)
-2. Geolocation reasoning: bayangan, rambu, mobil, vegetasi
-3. Verifikasi 2+ fitur independen di Mapillary/Sentinel
-4. Output: koordinat + fitur pembanding + confidence
+2. Geolocation reasoning: shadows, signage, vehicles, vegetation
+3. Verify 2+ independent features in Mapillary/Sentinel
+4. Output: coordinates + comparison features + confidence
 
-## 9. Dua handle X -> orang yang sama?
+## 10. Two X handles -> same person?
 
-1. Baseline kedua handle (profil + arsip)
-2. Cari user ID kedua handle
-3. ID sama -> confirmed; ID beda + sinyal kuat -> probable
-4. Output: verdict + tabel sinyal + bukti
+1. Baseline both handles (profile + archives)
+2. Find the user ID of both handles
+3. Same ID -> confirmed; different ID + strong signals -> probable
+4. Output: verdict + signal table + evidence
 
-## 10. Multi-identifier -> satu identitas (correlation)
+## 11. Multi-identifier -> one identity (correlation)
 
-1. Kumpulkan atribut tiap identifier via skill domain
-2. osint-correlation: cari bridge identifier (gravatar, ENS, breach record, link personal)
-3. Bangun graph: node = identifier, edge = bukti bertier
-4. Path strength = edge terlemah; cluster = node dengan path >= probable
-5. Cek kontradiksi keras
-6. Output: graph + verdict per cluster + daftar kontradiksi + pivot berikutnya
+1. Collect attributes for each identifier via the domain skills
+2. osint-correlation: find bridge identifiers (gravatar, ENS, breach record, personal link)
+3. Build the graph: nodes = identifiers, edges = tiered evidence
+4. Path strength = weakest edge; cluster = nodes connected by >= probable paths
+5. Check hard contradictions
+6. Output: graph + verdict per cluster + contradiction list + next pivots

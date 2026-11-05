@@ -1,115 +1,115 @@
-# Daftar Sumber (kurasi)
+# Source List (curated)
 
-Link ke upstream, tidak di-vendor. API key TIDAK disimpan di repo ini - set via env var saat runtime.
+Links to upstream only; nothing vendored. API keys are NEVER stored in this repo - set them via environment variables at runtime.
 
-> **Master API index**: [API-CATALOG.md](API-CATALOG.md) - 243 API / 44 kategori,
-> di-distilusi dari [cipher387/API-s-for-OSINT](https://github.com/cipher387/API-s-for-OSINT)
+> **Master API index**: [API-CATALOG.md](API-CATALOG.md) - 243 APIs / 44 categories,
+> distilled from [cipher387/API-s-for-OSINT](https://github.com/cipher387/API-s-for-OSINT)
 > (CC0 1.0). Refresh: `bash tools/sync-api-catalog.sh`.
-> File ini = tambalan spesifik OSINT-workflow yang tidak ada di katalog generik.
+> This file adds workflow-specific sources not covered by the generic catalog.
 
-## X / Twitter (riwayat & matching)
+## X / Twitter (history & matching)
 
-| Sumber | Fungsi |
+| Source | Function |
 |---|---|
-| Wayback Machine CDX API | snapshot profil per titik waktu (twitter.com & x.com) |
-| archive.today (archive.ph) | snapshot manual, sering punya profil yang di-screenshot user |
-| URL gambar profil `pbs.twimg.com/profile_images/<USER_ID>/...` | user ID numerik = kekal, anchor matching |
-| Mirror pihak-ketiga (xstalk, sotwe, twstalker, threadreaderapp) | cache profil, kadang histori |
-| X Advanced Search / Google `site:x.com` | mention handle lama, kandidat akun dari nama |
-| Tweet URL lama (`/status/<id>`) | authorship mengikuti handle sekarang = bukti change |
+| Wayback Machine CDX API | profile snapshots over time (twitter.com & x.com) |
+| archive.today (archive.ph) | manual snapshots, often user-captured profiles |
+| Profile image URL `pbs.twimg.com/profile_images/<USER_ID>/...` | numeric user ID = immutable matching anchor |
+| Third-party mirrors (xstalk, sotwe, twstalker, threadreaderapp) | cached profiles, sometimes history |
+| X Advanced Search / Google `site:x.com` | old-handle mentions, name-based candidates |
+| Old tweet URLs (`/status/<id>`) | authorship follows the current handle = change evidence |
 
 ## Email
 
-| Sumber | Fungsi |
+| Source | Function |
 |---|---|
-| haveibeenpwned.com/API/ v3 | breach search (butuh key; pakai range API untuk k-anonymity) |
-| hunter.io | email pattern perusahaan (butuh key) |
-| emailrep.io | reputasi email |
+| haveibeenpwned.com/API/ v3 | breach search (needs key; use the range API for k-anonymity) |
+| hunter.io | company email patterns (needs key) |
+| emailrep.io | email reputation |
 
 ## Username / people
 
-| Sumber | Fungsi |
+| Source | Function |
 |---|---|
-| blackbird (p1ngul1n0/blackbird) | 600+ platform, export PDF/CSV |
-| whatsmyname (WebBreacher) | dataset username->profil |
-| namechk / checkusernames | cek cepat multi-platform |
+| blackbird (p1ngul1n0/blackbird) | 600+ platforms, PDF/CSV export |
+| whatsmyname (WebBreacher) | username -> profile dataset |
+| namechk / checkusernames | quick multi-platform check |
 
 ## Phone
 
-| Sumber | Fungsi |
+| Source | Function |
 |---|---|
-| numverify / apilayer | carrier + line type per negara |
-| phoneinfoga (sundowndev) | framework recon nomor |
+| numverify / apilayer | carrier + line type by country |
+| phoneinfoga (sundowndev) | phone number recon framework |
 
 ## Domain / DNS / infra
 
-| Sumber | Fungsi |
+| Source | Function |
 |---|---|
-| crt.sh | certificate transparency, subdomain |
-| whois / whoishistory | pemilik domain, historis |
-| SecurityTrails | DNS historis (butuh key) |
-| Shodan / Censys | perangkat & service exposure (butuh key) |
-| reconspider (bhavsec) | scan IP/email/domain/org + dashboard |
+| crt.sh | certificate transparency, subdomains |
+| whois / whoishistory | domain ownership, history |
+| SecurityTrails | historical DNS (needs key) |
+| Shodan / Censys | device & service exposure (needs key) |
+| reconspider (bhavsec) | IP/email/domain/org scan + dashboard |
 
 ## Breach / leak / darknet
 
-| Sumber | Fungsi |
+| Source | Function |
 |---|---|
-| HIBP | breach search |
+| HIBP (range API, k-anonymity) | breach exposure check, no key needed for range endpoint |
 | psbdmp / paste scrape | paste monitoring |
-| DeHashed / leak-lookup | breach lookup (berbayar, legal-review dulu) |
+| DeHashed / leak-lookup / Snusbase | breach lookup (paid, legal-review first) |
 | Ahmia | darknet search (Tor) |
+
+## People search / data broker (name -> profile)
+
+| Source | Function |
+|---|---|
+| People-search aggregators / data brokers (per country) | name -> phone/address/age |
+| Local registries (AHU Online ID, OpenCorporates) | name -> company -> registered address |
+| Court records (SIpp, CourtListener) | name -> cases -> parties/addresses |
+| KYC/identity-verification APIs (Onfido, Appruve, Surepass - see API-CATALOG.md) | LEGAL channel for document verification - requires contract + consent |
+| Official publications (announcement/tender/decree PDFs) | name + title + institution |
+
+NOTE: national ID numbers (NIK) are sensitive personal data (UU PDP No. 27/2022 / GDPR Art. 9).
+Process only through legal channels with a documented basis. Free "check NIK by name" services
+are generally based on leaked databases - see the Legal boundary section of skills/osint-people/SKILL.md.
 
 ## Gov & corporate
 
-| Sumber | Fungsi |
+| Source | Function |
 |---|---|
-| OFAC SDN / sanctionssearch | sanctions list |
-| OpenCorporates | registry multi-negara |
-| SEC EDGAR (incl. full-text search) | filing perusahaan US |
-| CourtListener | court records US (gratis) |
+| OFAC SDN / sanctionssearch | sanctions lists |
+| OpenCorporates | multi-country registry |
+| SEC EDGAR (incl. full-text search) | US company filings |
+| CourtListener | US court records (free) |
 | SAM.gov / EU TED | procurement |
-| ICIJ Offshore Leaks Database | entity/officer/leak dokumen |
-| OCCRP Aleph | dataset investigatif |
+| ICIJ Offshore Leaks Database | entity/officer/leaked documents |
+| OCCRP Aleph | investigative datasets |
 
 ## GEOINT
 
-| Sumber | Fungsi |
+| Source | Function |
 |---|---|
-| Google Lens / Yandex Images / TinEye / Bing Visual | reverse image |
-| Mapillary | street-level imagery crowdsourced |
-| Sentinel Hub / USGS Earth Explorer | satelit imagery |
-| SunCalc | posisi matahari (verifikasi bayangan) |
+| Google Lens / Yandex Images / TinEye / Bing Visual | reverse image search |
+| Mapillary | crowdsourced street-level imagery |
+| Sentinel Hub / USGS Earth Explorer | satellite imagery |
+| SunCalc | sun position (shadow verification) |
 
 ## Web3 / on-chain
 
-| Sumber | Fungsi |
+| Source | Function |
 |---|---|
-| Etherscan & block explorer lain | tx, label, token, holder |
-| On-Chain Investigations Handbook (offgrid.labs) | kurasi tools investigasi on-chain + Monero |
-| Dune Analytics | query on-chain (SQL) |
-| Arkham / Nansen / Bubblemaps | attribution & graph (sebagian berbayar) |
+| Etherscan & other block explorers | txs, labels, tokens, holders |
+| On-Chain Investigations Handbook (offgrid.labs) | curated on-chain investigation tools + Monero |
+| Dune Analytics | on-chain SQL queries |
+| Arkham / Nansen / Bubblemaps | attribution & graph (partly paid) |
 
-API keys untuk layanan di atas: env var saja (SHODAN_KEY, HIBP_KEY, dsb). Lihat SECURITY.md.
+API keys for the services above: environment variables only (SHODAN_KEY, HIBP_KEY, etc.). See SECURITY.md.
 
-## People search / data broker (nama -> profil)
+## Tool frameworks
 
-| Sumber | Fungsi |
+| Source | Function |
 |---|---|
-| People-search aggregator / data broker (per negara) | nama -> phone/alamat/usia |
-| Registry lokal (AHU Online ID, OpenCorporates) | nama -> perusahaan -> alamat terdaftar |
-| Court records (SIpp, CourtListener) | nama -> perkara -> pihak/alamat |
-| KYC/identity-verification API (Onfido, Appruve, Surepass - lihat API-CATALOG.md) | kanal LEGAL verifikasi dokumen - butuh kontrak + consent |
-| Publikasi resmi (PDF pengumuman, tender, SK) | nama + jabatan + instansi |
-
-CATATAN: NIK/identifier nasional = data sensitif (UU PDP No. 27/2022 / GDPR Art. 9).
-Hanya proses via kanal legal dengan dasar hukum terdokumentasi. Layanan "cek NIK by nama"
-gratis umumnya berbasis database bocor - lihat skills/osint-people/SKILL.md bagian Legal boundary.
-
-## Tools framework
-
-| Sumber | Fungsi |
-|---|---|
-| SpiderFoot | OSINT automation 200+ modul |
-| Recon-ng | framework recon modular |
-| Maltego | link analysis (komersial) |
+| SpiderFoot | OSINT automation, 200+ modules |
+| Recon-ng | modular recon framework |
+| Maltego | link analysis (commercial) |

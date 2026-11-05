@@ -1,91 +1,91 @@
 ---
 name: osint-gov
-description: Government and corporate records OSINT skill - sanctions lists, corporate registries, court records, procurement, document leaks (ICIJ/OCCRP), FOIA. Includes entity-resolution matching logic for deciding whether records in different registries refer to the same person or company.
+description: Government and corporate records OSINT skill - sanctions lists, corporate registries, court records, procurement, document leaks (ICIJ/OCCRP), and FOIA-style requests. Includes entity-resolution matching logic for deciding whether records in different registries refer to the same person or company.
 ---
 # OSINT Gov & Corporate Records
 
 ## Agent instruction
 
-1. Identifikasi jenis entity (orang / perusahaan) + yurisdiksi
-2. Query sumber resmi satu per satu, catat identifier resmi (registry ID, LEI, tax ID, case number)
-3. Cocokkan record antar-sumber pakai COCOKLOGI di bawah - nama sama bukan bukti
-4. Output: profil entity + officer network + flag sanctions + tier tiap link
+1. Identify the entity type (person / company) and jurisdiction
+2. Query official sources one at a time, recording official identifiers (registry ID, LEI, tax ID, case number)
+3. Match records across sources with MATCHING LOGIC below - a shared name is not evidence
+4. Output: entity profile + officer network + sanctions flags, each link tiered
 
-## 1. Sanctions & watchlist
+## 1. Sanctions & watchlists
 
 - OFAC SDN list (US), EU consolidated list, UN Security Council list, UK OFSI
-- Cocokkan: nama exact + alias + fuzzy (nama bisa ditransliterasi beda)
-- Output: status listed/unlisted, program, tanggal listing, identifier (DOB, passport, address kalau ada)
+- Match: exact name + aliases + fuzzy (names get transliterated differently)
+- Output: listed/unlisted status, program, listing date, identifiers (DOB, passport, address where present)
 
 ## 2. Corporate registry
 
-- OpenCorporates (multi-negara), SEC EDGAR (US filing + full-text search), registry lokal per negara
-- Yang dicari: officers/directors, registered address, filing history, status aktif/non-aktif
-- Pivot: officer name -> orang (osint-web2), address -> cluster perusahaan lain
+- OpenCorporates (multi-country), SEC EDGAR (US filings + full-text search), local registries
+- Look for: officers/directors, registered address, filing history, active/inactive status
+- Pivot: officer name -> person (osint-web2), address -> cluster of related companies
 
 ## 3. Court & legal records
 
-- CourtListener (US, gratis), PACER (berbayar), registry lokal
-- Cari: nama pihak, nomor perkara, jenis (civil/criminal/bankruptcy), outcome
-- Hati-hati: kasus masih berjalan != fakta keputusan; catat status
+- CourtListener (US, free), PACER (paid), local registries
+- Look for: party names, case numbers, case type (civil/criminal/bankruptcy), outcome
+- Careful: an ongoing case is not an adjudicated fact; record the status
 
-## 4. Procurement & tender
+## 4. Procurement & tenders
 
-- SAM.gov (US federal), EU TED, portal tender lokal
-- Kegunaan: siapa pemilik vendor, kontrak dengan pemerintah, alamat, nilai kontrak
+- SAM.gov (US federal), EU TED, local tender portals
+- Use: vendor ownership, government contracts, addresses, contract values
 
 ## 5. Document leaks & investigative databases
 
-- ICIJ Offshore Leaks (Panama Papers, Pandora Papers dll) - cari entity/officer/intermediary
-- OCCRP Aleph - search dokumen & dataset investigatif
-- Kegunaan: kepemilikan tersembunyi, alamat, hubungan antar-entity
+- ICIJ Offshore Leaks (Panama Papers, Pandora Papers etc.) - search entity/officer/intermediary
+- OCCRP Aleph - search documents and investigative datasets
+- Use: hidden ownership, addresses, entity relationships
 
-## 6. FOIA / informasi publik
+## 6. FOIA / public information requests
 
-- US FOIA + state-level public records; tiap negara punya padanan
-- Proses: identifikasi agency -> drafting request -> track. Berguna untuk dokumen yang tidak terbit online
+- US FOIA + state-level public records; every country has an equivalent
+- Process: identify the agency -> draft the request -> track. Useful for documents not published online
 
-## COCOKLOGI - entity resolution (record = orang/company yang sama?)
+## MATCHING LOGIC - entity resolution (is this record the same person/company?)
 
-### Orang
+### Persons
 
-| Sinyal | Tier | Catatan |
+| Signal | Tier | Note |
 |---|---|---|
-| Registry/tax ID sama (NPWP, SSN terakhir 4, passport no) | KONFIRMASI | identifier resmi kekal |
-| Nama + DOB exact | KUAT | DOB langka jadi pembeda |
-| Nama + alamat terap | KUAT | alamat sama persis |
-| Officer di perusahaan yang sama + periode sama | KUAT | kombinasi |
-| Nama exact + kota | SEDANG | nama umum = lemah |
-| Fuzzy name (transliterasi: Muhammad/Mohamed/Mohammad, Wong/Wan) | SEDANG | periksa alias & DOB |
-| Nama saja | LEMAH | bukan sinyal |
-| Email/nomor di filing sama dengan milik target | KUAT | |
+| Same official ID (NPWP, last-4 SSN, passport no.) | CONFIRMED | official identifiers are durable |
+| Name + DOB exact | STRONG | a rare DOB is a strong discriminator |
+| Name + exact street address | STRONG | |
+| Officer at the same company + same period | STRONG | combination |
+| Exact name + city | MEDIUM | common names = weak |
+| Fuzzy name (transliteration: Muhammad/Mohamed/Mohammad, Wong/Wan) | MEDIUM | check aliases and DOB |
+| Name only | WEAK | not a signal |
+| Email/phone in a filing matches the target's | STRONG | |
 
-### Perusahaan
+### Companies
 
-| Sinyal | Tier | Catatan |
+| Signal | Tier | Note |
 |---|---|---|
-| Company number / registry ID sama | KONFIRMASI | |
-| LEI sama | KONFIRMASI | |
-| Nama + registered address exact | KUAT | |
-| Officer set overlap >= 50% + periode sama | KUAT | |
-| Nama mirip | LEMAH | nama PT bisa sama beda kota |
-| Domain/email pattern sama | SEDANG | |
+| Same company number / registry ID | CONFIRMED | |
+| Same LEI | CONFIRMED | |
+| Name + exact registered address | STRONG | |
+| Officer set overlap >= 50% + same period | STRONG | |
+| Similar name | WEAK | company names repeat across cities |
+| Same domain/email pattern | MEDIUM | |
 
-### Aturan verdict
+### Verdict rules
 
-- confirmed: identifier resmi sama (registry ID / LEI / DOB+ID)
-- probable: >= 2 KUAT (nama+DOB+alamat, atau officer+periode+address)
-- possible: 1 KUAT atau fuzzy name + atribut umum
-- rejected: registry ID beda (entity beda), DOB beda > margin error, officer periode tidak overlap sama sekali
+- confirmed: same official identifier (registry ID / LEI / DOB+ID)
+- probable: >= 2 STRONG (name+DOB+address, or officer+period+address)
+- possible: 1 STRONG or fuzzy name + common attributes
+- rejected: different registry IDs (different entities), DOB beyond error margin, officer periods with zero overlap
 
-### Jebakan umum
+### Common traps
 
-- Nama orang sama di registry beda negara/kota - selalu cek yurisdiksi
-- Perusahaan rename/merge: nama beda tapi registry ID sama = confirmed
-- Pasangan/keluarga pakai alamat sama - jangan merge otomatis
-- Officer nominee (orang pinjam nama) - record resmi benar tapi kontrol sebenarnya
-- Transliterasi nama Arab/Tionghoa/India bikin false match
+- Same person name in different countries/cities - always check jurisdiction
+- Company renames/mergers: different name, same registry ID = confirmed
+- Spouses/family sharing an address - do not auto-merge
+- Nominee officers (lent names) - the official record is true but control lies elsewhere
+- Arabic/Chinese/Indian name transliteration creates false matches
 
 ## Evidence
 
-Simpan: sumber resmi, nomor dokumen/filing, tanggal, hash PDF. Kasih confidence: registry resmi = tinggi; mesin pencari/agregator = verifikasi ulang ke sumber primer.
+Record: official source, document/filing number, date, PDF hash. Assign confidence: official registry = high; search engines/aggregators = re-verify against the primary source.

@@ -1,84 +1,84 @@
 ---
 name: osint
-description: Entry-point router for any OSINT task across web2 and web3. Use at the start of an investigation to map the starting identifier (email, username, phone, domain, wallet, photo, name, X handle) to the right domain skill, and to apply the global confidence framework for every match.
+description: Entry-point router for any OSINT task across web2 and web3. Use at the start of an investigation to map the starting identifier (email, username, phone, domain, wallet, photo, full name, X handle) to the right domain skill, and to apply the global confidence framework to every match.
 ---
 # OSINT Router
 
-Satu pintu masuk untuk semua investigasi. Tugas router: tentukan skill domain, sumber, urutan langkah, dan framework confidence untuk setiap klaim pencocokan.
+Single entry point for all investigations. The router's job: pick the domain skill, sources, and step order - and enforce the confidence framework for every matching claim.
 
-## FRAMEWORK CONFIDENCE GLOBAL (berlaku di SEMUA skill)
+## GLOBAL CONFIDENCE FRAMEWORK (applies to ALL skills)
 
-Setiap klaim "A = B" atau "A milik orang X" WAJIB memakai tier ini. Tanpa tier, klaim bukan temuan.
+Every claim "A = B" or "A belongs to person X" MUST use these tiers. Without a tier, a claim is not a finding.
 
-### Tier sinyal
+### Signal tiers
 
-| Tier | Definisi | Contoh |
+| Tier | Definition | Examples |
 |---|---|---|
-| **KONFIRMASI** | Identifier kekal yang identik | user ID numerik X, tweet ID -> authorship, wallet signature, GPS EXIF, registry ID (NPWP/LEI/company number), hash kredensial cocok |
-| **KUAT** | Atribut langka yang cocok | avatar perceptual hash, link personal/domain, follower graph overlap, join date, ENS, alamat terap |
-| **SEDANG** | Atribut umum yang cocok | display name, overlap bio text, nama+domisili, phone carrier |
-| **PENDUKUNG** | Pola perilaku | gaya bahasa, jam posting, timing tx, nilai bulat |
-| **LEMAH** | Kemiripan dangkal | handle mirip, nama umum, "mirip orangnya" |
+| **CONFIRMED** | immutable identifier identical | X numeric user ID, tweet ID -> authorship, wallet signature, GPS EXIF, registry ID (NPWP/LEI/company number), credential hash match |
+| **STRONG** | rare attribute match | avatar perceptual hash, personal link/domain, follower graph overlap, join date, ENS, exact street address |
+| **MEDIUM** | common attribute match | display name, bio text overlap, name + city, phone carrier |
+| **SUPPORTING** | behavioral pattern | writing style, posting hours, tx timing, round-number amounts |
+| **WEAK** | surface similarity | similar handle, common name, "looks like them" |
 
-### Aturan verdict
+### Verdict rules
 
-| Verdict | Syarat |
+| Verdict | Requirement |
 |---|---|
-| **confirmed** | >= 1 sinyal KONFIRMASI, tanpa kontradiksi |
-| **probable** | >= 2 sinyal KUAT, tanpa kontradiksi |
-| **possible** | 1 KUAT, atau >= 2 SEDANG, atau kombinasi SEDANG+PENDUKUNG |
-| **rejected** | ada kontradiksi keras (identifier kekal beda, tanggal beda jauh, graph nol overlap) |
+| **confirmed** | >= 1 CONFIRMED signal, no contradiction |
+| **probable** | >= 2 STRONG signals, no contradiction |
+| **possible** | 1 STRONG, or >= 2 MEDIUM, or MEDIUM + SUPPORTING combination |
+| **rejected** | a hard contradiction exists (different immutable ID, dates far apart, zero graph overlap) |
 
-### Aturan kontradiksi
+### Contradiction rules
 
-1. Satu kontradiksi keras = rejected, apa pun sinyal positifnya
-2. Kontradiksi lunak (misal timezone beda) = turunkan 1 tier + catat
-3. Klaim tanpa tier = bukan temuan, jangan masuk laporan
-4. Hasil possible: laporkan sebagai hipotesis + daftar sinyal + apa yang bisa mengonfirmasi/menolak
+1. One hard contradiction = rejected, regardless of positive signals
+2. Soft contradiction (e.g. different timezone) = downgrade one tier and record it
+3. An untiered claim is not a finding and does not enter the report
+4. A "possible" result is reported as a hypothesis + signal list + what would confirm or refute it
 
-## Peta routing
+## Routing map
 
-| Kamu punya | Skill pertama | Skill lanjutan |
+| You have | First skill | Follow-up skills |
 |---|---|---|
-| **Nama lengkap orang (butuh dossier: phone/alamat/dll)** | **osint-people** | osint-web2, osint-gov, osint-x |
+| **Full name (need dossier: phone/address/etc.)** | **osint-people** | osint-web2, osint-gov, osint-x, osint-leak |
 | Email | osint-web2 | osint-leak (breach), osint-gov (entity) |
-| Username/handle (non-X) | osint-web2 | osint-geo (foto profil), osint-leak |
-| Username X / handle X | osint-x | osint-geo (avatar), osint-leak, osint-web3 |
-| Phone number | osint-web2 | osint-gov, osint-people (kembalikan ke orang) |
-| Perusahaan/domain | osint-web2 | osint-gov |
+| Username/handle (non-X) | osint-web2 | osint-geo (profile photo), osint-leak |
+| X username / handle | osint-x | osint-geo (avatar), osint-leak, osint-web3 |
+| Phone number | osint-web2 | osint-gov, osint-people (back to the person) |
+| Company/domain | osint-web2 | osint-gov |
 | Wallet address | osint-web3 | osint-leak, osint-web2 |
 | Token/NFT contract | osint-web3 | osint-gov |
-| Foto/gambar | osint-geo | osint-x / osint-web2 / osint-people |
-| File bocor/dump | osint-leak | osint-opsec |
-| 2+ identifier yang harus disambung | osint-correlation | skill domain masing-masing |
+| Photo/image | osint-geo | osint-x / osint-web2 / osint-people |
+| Leaked file / dump | osint-leak | osint-opsec (handling) |
+| 2+ identifiers to connect | osint-correlation | respective domain skills |
 
-## Aturan main
+## Standing rules
 
-1. Read-only dulu. Fase pertama tidak pernah butuh login dan tidak meninggalkan jejak di sisi target.
-2. OPSEC sebelum ekspansi. Begitu investigasi menyentuh identitas asli target, baca skills/osint-opsec/SKILL.md dulu.
-3. Evidence-first. Tiap temuan: URL sumber, timestamp UTC, hash file kalau ada.
-4. Satu pivot per langkah. Dari satu identifier, ekspansi ke satu hipotesis; catat, lalu lanjut.
-5. Setiap klaim pencocokan pakai framework di atas. Tanpa tier = bukan temuan.
-6. **Legal gate** untuk identifier sensitif (NIK, data biometrik, kesehatan): baca skills/osint-people/SKILL.md bagian Legal boundary.
-7. Stop kalau legal grey. Kalau langkah berikutnya butuh akses data non-publik tanpa dasar hukum, berhenti dan dokumentasikan.
+1. Read-only first. The initial phase never requires login and leaves no trace on the target side.
+2. OPSEC before expansion. As soon as the investigation touches a real target identity, read skills/osint-opsec/SKILL.md first.
+3. Evidence-first. Every finding: source URL, UTC timestamp, file hash where applicable.
+4. One pivot per step. From one identifier, expand to one hypothesis; record, then continue.
+5. Every matching claim uses the framework above. No tier = not a finding.
+6. **Legal gate** for sensitive identifiers (NIK, biometrics, health data): read the Legal boundary section of skills/osint-people/SKILL.md.
+7. Stop in legal grey zones. If the next step needs non-public data without a legal basis, stop and document.
 
-## Flow standar
+## Standard flow
 
 ```
 START (identifier)
-  -> osint-opsec       : siapkan posture (VM / profile / jaringan)
-  -> domain skill      : ekstrak atribut + pivot pertama
-  -> osint-correlation : kalau ada 2+ identifier, bangun graph + verdict
-  -> cross-domain      : pinjam skill lain sesuai tabel routing
-  -> osint-opsec       : simpan evidence ter-hash, bersihkan jejak kerja
-END (laporan: temuan bertier + evidence + verdict + confidence)
+  -> osint-opsec        : prepare posture (VM / profile / network)
+  -> domain skill       : extract attributes + first pivot
+  -> osint-correlation  : if 2+ identifiers, build graph + verdict
+  -> cross-domain       : borrow other skills per the routing map
+  -> osint-opsec        : store hashed evidence, clean up work traces
+END (report: tiered findings + evidence + verdict + confidence)
 ```
 
-## Anti-pattern
+## Anti-patterns
 
-- Mulai dari tool tanpa hipotesis
-- Pakai akun personal untuk search target sensitif
-- Simpan hasil investigasi di folder cloud yang auto-sync
-- Klaim "A = B" tanpa tier konfirmasi
-- Merge semua username jadi satu orang cuma karena handle mirip
-- Proses NIK/data sensitif tanpa mendokumentasikan dasar hukum
+- Starting from a tool without a hypothesis
+- Using personal accounts to search sensitive targets
+- Storing investigation results in auto-syncing cloud folders
+- Claiming "A = B" without a CONFIRMED-tier signal
+- Merging usernames into one person just because handles look alike
+- Processing NIK/sensitive data without documenting the legal basis
