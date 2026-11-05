@@ -52,6 +52,7 @@ HIBP_KEY=... bash tools/breach-check.sh <email>   # email -> breach list (HIBP A
 bash tools/breach-check.sh '<password>' --pass    # password exposure (k-anonymity, keyless)
 bash tools/leak-grep.sh <identifier> [dir]  # query a local combolist/stealer-log dataset (masked)
 python tools/gen-synthetic-leak.py          # synthetic combolist/stealer/breach dataset (validation)
+bash tools/leak-news-watch.sh               # darknet leak-campaign news watch -> out/leak-watch/
 bash tools/fetch-breach-catalog.sh          # keyless HIBP breach catalog -> data/ (metadata only)
 bash tools/sync-api-catalog.sh              # refresh the API catalog from upstream
 

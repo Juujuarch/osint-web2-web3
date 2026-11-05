@@ -76,6 +76,7 @@ Links to upstream only; nothing vendored. API keys are NEVER stored in this repo
 | Leak forums (exploit.in, XSS.is, BreachForums mirrors) | combolist/stealer-log trade, actor reputation, claimed-breach samples |
 | Telegram shop channels & "log shops" | primary distribution layer for stealer logs and combos |
 | Initial-access broker / RaaS affiliate channels | corporate access sale (VPN/RDP/SSO), insider recruitment |
+| Dark Web Informer RSS (`darkwebinformer.com/feed/` -> `/rss/`) | clearnet index of darknet leak/broker/extortion claims - actor, victim, record count, date. Watch: `bash tools/leak-news-watch.sh` |
 | Ahmia | darknet search (Tor) |
 
 NOTE: everything in this section is for **exposure confirmation and monitoring**.
