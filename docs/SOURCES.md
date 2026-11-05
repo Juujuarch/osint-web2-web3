@@ -92,6 +92,20 @@ Link ke upstream, tidak di-vendor. API key TIDAK disimpan di repo ini - set via 
 
 API keys untuk layanan di atas: env var saja (SHODAN_KEY, HIBP_KEY, dsb). Lihat SECURITY.md.
 
+## People search / data broker (nama -> profil)
+
+| Sumber | Fungsi |
+|---|---|
+| People-search aggregator / data broker (per negara) | nama -> phone/alamat/usia |
+| Registry lokal (AHU Online ID, OpenCorporates) | nama -> perusahaan -> alamat terdaftar |
+| Court records (SIpp, CourtListener) | nama -> perkara -> pihak/alamat |
+| KYC/identity-verification API (Onfido, Appruve, Surepass - lihat API-CATALOG.md) | kanal LEGAL verifikasi dokumen - butuh kontrak + consent |
+| Publikasi resmi (PDF pengumuman, tender, SK) | nama + jabatan + instansi |
+
+CATATAN: NIK/identifier nasional = data sensitif (UU PDP No. 27/2022 / GDPR Art. 9).
+Hanya proses via kanal legal dengan dasar hukum terdokumentasi. Layanan "cek NIK by nama"
+gratis umumnya berbasis database bocor - lihat skills/osint-people/SKILL.md bagian Legal boundary.
+
 ## Tools framework
 
 | Sumber | Fungsi |

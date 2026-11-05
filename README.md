@@ -13,6 +13,7 @@ Prinsip desain: **router -> domain skill -> backend tool**. Satu entry point (`o
 | `skills/osint/` | Router + **framework confidence global** |
 | `skills/osint-correlation/` | Cocoklogi lintas domain: bridge identifier, graph, verdict |
 | `skills/osint-x/` | X/Twitter: username change, bio change, matching logic |
+| skills/osint-people/ | Nama lengkap -> dossier: phone, alamat, pekerjaan, identifier resmi (legal-gated) |
 | `skills/osint-web2/` | Identitas & web: email, phone, username, people, entity, domain |
 | `skills/osint-web3/` | On-chain: wallet attribution, clustering, cross-chain (read-only) |
 | `skills/osint-leak/` | Breach exposure, combolist, paste, darknet monitoring |
@@ -64,6 +65,9 @@ Cocoklogi lintas domain: tabel bridge identifier (email<->handle<->wallet<->phon
 
 ### osint-x
 Kasus khas: cuma punya username X atau nama asli. User ID numerik kekal, tweet lama -> authorship handle baru, arsip Wayback/archive.today, timeline bio, matching logic confirmed/probable/possible/rejected.
+
+### osint-people
+Kasus khas: cuma punya nama lengkap, butuh output detail (phone, alamat, NIK, dll). Phase 1 candidate discovery -> Phase 2 enrichment (kontak/alamat/kerja/digital/identifier resmi) -> Phase 3 cocoklogi. NIK = legal gate (UU PDP). Output: dossier template bertier.
 
 ### osint-web2
 Email (validity -> exposure -> accounts -> entity), username (blackbird 600+ platform), phone, people, domain/IP/DNS, entity. COCOKLOGI: gravatar, avatar pHash, link personal, follower graph overlap.
