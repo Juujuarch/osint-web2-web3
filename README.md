@@ -20,7 +20,8 @@ Design principle: **router -> domain skill -> backend tool**. One entry point (`
 | `skills/osint-geo/` | Reverse image search, face search, geolocation |
 | `skills/osint-opsec/` | Attribution hygiene, sock puppets, evidence chain, counter-matching |
 | `skills/osint-correlation/` | Cross-domain matching: bridge identifiers, graph, verdicts |
-| `tools/` | Backend installer, wrappers, secret scanner, X history, breach check, API catalog sync |
+| `skills/osint-telegram/` | Telegram & Discord: immutable ID anchors, username history, channel enumeration, message archaeology |
+| `tools/` | Backend installer, wrappers, secret scanner, X history, breach check, local leak-dataset query, API catalog sync |
 | `docs/` | Scenario workflows, source list, API catalog |
 
 ## Confidence framework (core of every skill)
@@ -48,6 +49,7 @@ bash tools/username-hunt.sh <username>      # search a username across 600+ plat
 bash tools/domain-recon.sh <domain>         # whois/DNS/subdomains/headers
 bash tools/x-history.sh <handle>            # X profile history via public archives
 bash tools/breach-check.sh <email>          # breach exposure check (k-anonymity, no key)
+bash tools/leak-grep.sh <identifier> [dir]  # query a local combolist/stealer-log dataset (masked)
 bash tools/sync-api-catalog.sh              # refresh the API catalog from upstream
 
 # before any commit or push
@@ -109,7 +111,7 @@ This suite is for OSINT on targets where you have a legal basis (your own assets
 
 ## Roadmap
 
-- [ ] Skill: telegram/discord channel OSINT
+- [x] Skill: telegram/discord channel OSINT
 - [ ] Skill: image EXIF/metadata forensics
 - [ ] Backend integration: SpiderFoot
 - [ ] Investigation report template (evidence-first)

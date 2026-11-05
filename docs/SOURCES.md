@@ -18,6 +18,18 @@ Links to upstream only; nothing vendored. API keys are NEVER stored in this repo
 | X Advanced Search / Google `site:x.com` | old-handle mentions, name-based candidates |
 | Old tweet URLs (`/status/<id>`) | authorship follows the current handle = change evidence |
 
+## Telegram / Discord
+
+| Source | Function |
+|---|---|
+| my.telegram.org | api_id + api_hash for MTProto (Telethon / Pyrogram) |
+| Public ID bots (@userinfobot, @getidsbot, @username_to_id_bot) | handle -> immutable numeric user ID |
+| tgstat / telemetr / combot | channel stats, subscriber graphs, historical handle snapshots |
+| Wayback CDX (`t.me/<handle>`) | old-handle archives = username-change evidence |
+| Forwarded-message headers | origin channel/user of reposted content |
+| Discord snowflake decoders | snowflake -> account creation timestamp |
+| disboard.org / discord discovery | public guild enumeration |
+
 ## Email
 
 | Source | Function |
@@ -56,9 +68,19 @@ Links to upstream only; nothing vendored. API keys are NEVER stored in this repo
 | Source | Function |
 |---|---|
 | HIBP (range API, k-anonymity) | breach exposure check, no key needed for range endpoint |
+| Pwned Passwords (range API, k-anonymity) | own-password exposure check, full password never sent |
 | psbdmp / paste scrape | paste monitoring |
 | DeHashed / leak-lookup / Snusbase | breach lookup (paid, legal-review first) |
+| Leak forums (exploit.in, XSS.is, BreachForums mirrors) | combolist/stealer-log trade, actor reputation, claimed-breach samples |
+| Telegram shop channels & "log shops" | primary distribution layer for stealer logs and combos |
+| Initial-access broker / RaaS affiliate channels | corporate access sale (VPN/RDP/SSO), insider recruitment |
 | Ahmia | darknet search (Tor) |
+
+NOTE: everything in this section is for **exposure confirmation and monitoring**.
+Using stolen credentials against accounts you do not own is credential stuffing /
+unauthorized access - illegal in effectively every jurisdiction. Downloaded dumps are
+malware vectors: offline VM only. Local datasets live in `leaks/` (gitignored); query
+them with `bash tools/leak-grep.sh <identifier>`.
 
 ## People search / data broker (name -> profile)
 

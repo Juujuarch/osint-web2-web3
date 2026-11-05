@@ -23,6 +23,9 @@ cases/
 *.tmp
 resp*.json
 
+# === dataset leak lokal (combolist / stealer log / dump) ===
+leaks/
+
 # === python / node ===
 __pycache__/
 *.pyc
