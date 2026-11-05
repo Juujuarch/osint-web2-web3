@@ -1,6 +1,17 @@
-# Daftar Sumber (kurasi)
+﻿# Daftar Sumber (kurasi)
 
 Link ke upstream, tidak di-vendor. API key TIDAK disimpan di repo ini - set via env var saat runtime.
+
+## X / Twitter (riwayat & matching)
+
+| Sumber | Fungsi |
+|---|---|
+| Wayback Machine CDX API | snapshot profil per titik waktu (twitter.com & x.com) |
+| archive.today (archive.ph) | snapshot manual, sering punya profil yang di-screenshot user |
+| URL gambar profil `pbs.twimg.com/profile_images/<USER_ID>/...` | user ID numerik = kekal, anchor matching |
+| Mirror pihak-ketiga (xstalk, sotwe, twstalker, threadreaderapp) | cache profil, kadang histori |
+| X Advanced Search / Google `site:x.com` | mention handle lama, kandidat akun dari nama |
+| Tweet URL lama (`/status/<id>`) | authorship mengikuti handle sekarang = bukti change |
 
 ## Email
 
@@ -73,7 +84,8 @@ Link ke upstream, tidak di-vendor. API key TIDAK disimpan di repo ini - set via 
 | On-Chain Investigations Handbook (offgrid.labs) | kurasi tools investigasi on-chain + Monero |
 | Dune Analytics | query on-chain (SQL) |
 | Arkham / Nansen / Bubblemaps | attribution & graph (sebagian berbayar) |
-- API keys untuk layanan di atas: env var saja (SHODAN_KEY, HIBP_KEY, dsb). Lihat SECURITY.md.
+
+API keys untuk layanan di atas: env var saja (SHODAN_KEY, HIBP_KEY, dsb). Lihat SECURITY.md.
 
 ## Tools framework
 

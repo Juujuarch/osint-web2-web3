@@ -1,8 +1,10 @@
 ---
 name: osint-web2
-description: Web2 OSINT skill for identifiers - email, username/handle, phone, person name, business entity, and domain/IP. Use when pivoting from one web2 identifier to accounts, profiles, ownership, and infrastructure, with explicit sources and evidence capture.
+description: Web2 OSINT skill for identifiers - email, username/handle, phone, person name, business entity, and domain/IP. Use when pivoting from one web2 identifier to accounts, profiles, ownership, and infrastructure, with explicit sources and evidence capture. For X/Twitter specific work (username change, bio change, matching logic) use osint-x instead.
 ---
 # OSINT Web2
+
+Catatan: kalau identifier-nya **handle X atau nama asli yang target utamanya di X**, pakai `skills/osint-x/SKILL.md` - di sana ada deteksi username change, bio change, dan matching logic. Skill ini untuk web2 umum.
 
 ## Email
 
@@ -13,7 +15,7 @@ Urutan: validity -> exposure -> accounts -> entity.
 3. Accounts: gravatar hash (MD5 email -> avatar URL), GitHub user search, whois historis yang memuat email
 4. Entity: email korporat -> domain -> registry (pinjam osint-gov)
 
-## Username / handle
+## Username / handle (non-X)
 
 Backend: blackbird (600+ platform, berbasis WhatsMyName).
 
@@ -22,7 +24,8 @@ bash tools/username-hunt.sh <username>
 ```
 
 - Catat platform yang match + URL profil
-- Pivot: bio/foto -> osint-geo; handle sama di platform kripto -> osint-web3 (bio sering link wallet/ENS)
+- Pivot: bio/foto -> osint-geo; handle sama di platform kripto -> osint-web3
+- Kalau handle-nya di X -> pindah ke osint-x (butuh riwayat + matching logic)
 - False positive happens: verifikasi manual tiap match sebelum dianggap satu orang
 
 ## Phone
@@ -31,10 +34,11 @@ bash tools/username-hunt.sh <username>
 - Pivot: nomor -> akun chat/sosial via fitur "cari by phone" (butuh OPSEC, lihat osint-opsec)
 - Jangan asumsikan nomor = identitas; nomor bisa dipakai ulang
 
-## Nama orang
+## Nama orang (di luar X)
 
 - Mesin pencari dengan operator: "nama" site:linkedin.com, "nama" filetype:pdf, variasi ejaan
 - Profil publik -> foto -> osint-geo
+- Kalau target utamanya di X: pakai osint-x Entry B (nama asli -> kandidat akun -> matching logic)
 - Nama + negara jelas -> osint-gov (registry direksi, court records)
 
 ## Domain / IP / DNS

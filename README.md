@@ -1,6 +1,6 @@
 # OSINT WEB2 & WEB3
 
-Suite skill OSINT (Open-Source Intelligence) untuk investigasi **web2** (email, phone, username, people, entity, domain) dan **web3** (wallet attribution, clustering, cross-chain pivot), plus **leak/breach**, **gov records**, **GEOINT**, dan **OPSEC**.
+Suite skill OSINT (Open-Source Intelligence) untuk investigasi **web2** (email, phone, username, people, entity, domain), **X/Twitter** (username change, bio change, matching logic), dan **web3** (wallet attribution, clustering, cross-chain pivot), plus **leak/breach**, **gov records**, **GEOINT**, dan **OPSEC**.
 
 Prinsip desain: **router -> domain skill -> backend tool**. Satu entry point (`osint`), tiap domain punya workflow + sumber yang eksplisit, backend tool opsional dipasang terpisah dan tidak pernah menyimpan kredensial di repo ini.
 
@@ -9,13 +9,14 @@ Prinsip desain: **router -> domain skill -> backend tool**. Satu entry point (`o
 | Path | Fungsi |
 |---|---|
 | `skills/osint/` | Router - entry point, menentukan skill domain mana yang dipakai |
+| `skills/osint-x/` | X/Twitter: username change, bio change, matching logic identitas |
 | `skills/osint-web2/` | Identitas & web: email, phone, username, people, entity, domain |
 | `skills/osint-web3/` | On-chain: wallet attribution, clustering, cross-chain pivot (read-only) |
 | `skills/osint-leak/` | Breach exposure, combolist, paste, darknet monitoring |
 | `skills/osint-gov/` | Sanctions, corporate registry, court records, procurement, document leaks |
 | `skills/osint-geo/` | Reverse image search, face search, geolocation |
 | `skills/osint-opsec/` | Attribution hygiene, sock puppet, evidence chain, data handling |
-| `tools/` | Installer backend, wrapper, secret scanner |
+| `tools/` | Installer backend, wrapper, secret scanner, X history |
 | `docs/` | Workflow per skenario + daftar sumber |
 
 ## Quick start
@@ -25,8 +26,9 @@ Prinsip desain: **router -> domain skill -> backend tool**. Satu entry point (`o
 bash tools/install-backends.sh
 
 # 2. wrapper siap pakai
-bash tools/username-hunt.sh <username>
-bash tools/domain-recon.sh <domain>
+bash tools/username-hunt.sh <username>      # cari username di 600+ platform
+bash tools/domain-recon.sh <domain>         # whois/DNS/subdomain/headers
+bash tools/x-history.sh <handle>            # riwayat profil X via arsip publik
 
 # 3. sebelum commit/push apa pun
 bash tools/scan-secrets.sh
@@ -37,36 +39,42 @@ Skill-nya bisa dibaca langsung dari `skills/*/SKILL.md` (format agent-skill stan
 ## Skill domain - ringkas
 
 ### osint (router)
-Titik masuk. Petakan apa yang kamu punya (email / username / wallet / domain / foto / nama) ke skill domain yang tepat, lalu ke sumber konkret.
+Titik masuk. Petakan apa yang kamu punya (email / username / wallet / domain / foto / nama / handle X) ke skill domain yang tepat, lalu ke sumber konkret.
+
+### osint-x - X / Twitter
+Kasus khas: **cuma punya username X atau nama asli**, tapi butuh tahu akunnya ganti handle, ganti bio, atau dua handle itu orang yang sama.
+
+- **Konsek kunci**: user ID numerik **kekal** walau handle berubah; tweet ID kekal dan authorship mengikuti handle sekarang; arsip publik (Wayback, archive.today, mirror) menyimpan versi profil masa lalu
+- **Deteksi username change**: tweet lama -> authorship handle baru, user ID dari URL avatar (`pbs.twimg.com/profile_images/<USER_ID>/...`), CDX snapshot handle lama, mention handle lama
+- **Deteksi bio change**: diff bio/display name/avatar/link antar snapshot arsip, disimpan sebagai timeline
+- **Matching logic**: tabel sinyal (konfirmasi/kuat/sedang/pendukung) + aturan keputusan confirmed / probable / possible / rejected
+- Semua fase arsip **pasif** - tidak menyentuh X
 
 ### osint-web2
-- **Email**: validity, deliverability, breach exposure (lihat osint-leak), akun yang pakai email itu (gravatar, github, dll)
+- **Email**: validity, deliverability, breach exposure (lihat osint-leak), akun yang pakai email itu
 - **Username**: enumerasi lintas platform (blackbird, 600+ site), pivot ke profil lain
-- **Phone**: carrier, line type, lookup per negara (via sumber di docs/SOURCES.md)
+- **Phone**: carrier, line type, lookup per negara
 - **People/entity**: nama -> profil publik, business entity, directorship
-- **Domain/IP/DNS**: whois, subdomain (crt.sh), tech fingerprint, endpoint surface (gabung dengan recon skill hack-skills kalau konteksnya ofensif)
+- **Domain/IP/DNS**: whois, subdomain (crt.sh), tech fingerprint
 
 ### osint-web3
 - **Wallet attribution**: label, first-funding source, exchange touchpoint
 - **Clustering**: common-input ownership, deposit address, gas funder, ENS
-- **Cross-chain pivot**: address yang sama di EVM lain, bridge tx, wrapped asset
+- **Cross-chain pivot**: address EVM yang sama, bridge tx, wrapped asset
 - **Holder/token graph**: NFT holder, LP provider, airdrop farm pattern
-- Semua **read-only** - skill ini tidak pernah menandatangani transaksi
+- Semua **read-only** - tidak pernah menandatangani transaksi
 
 ### osint-leak
-- Breach search (HIBP model k-anonymity: hanya prefix hash yang dikirim)
-- Paste monitoring, combolist awareness, darknet market watch (via Tor, dengan OPSEC)
-- Monitoring domain/email sendiri
+Breach search (model k-anonymity), paste monitoring, combolist awareness, darknet market watch (via Tor + OPSEC), monitoring domain/email sendiri.
 
 ### osint-gov
-- Sanctions (OFAC SDN, EU, UN), corporate registry (OpenCorporates, SEC EDGAR), court records (CourtListener, PACER), procurement (SAM.gov, TED), document leaks (ICIJ Offshore Leaks, OCCRP Aleph), FOIA
+Sanctions (OFAC SDN, EU, UN), corporate registry (OpenCorporates, SEC EDGAR), court records (CourtListener, PACER), procurement (SAM.gov, TED), document leaks (ICIJ Offshore Leaks, OCCRP Aleph), FOIA.
 
 ### osint-geo
-- Reverse image (Google Lens, Yandex, TinEye), face search (hati-hati legal), geolocation reasoning (shadow/sun, signage, landmark), imagery (Mapillary, Sentinel), EXIF discipline
+Reverse image (Google Lens, Yandex, TinEye), face search (batas legal/etik), geolocation reasoning (bayangan/matahari, rambu, mobil), imagery (Mapillary, Sentinel).
 
 ### osint-opsec
-- Aturan sebelum investigasi: VM/browser profile terpisah, nol akun personal yang login, jaringan terpisah
-- Sock puppet management, evidence chain (hash + timestamp), storage terenkripsi, batas legal
+Aturan sebelum investigasi: VM/browser profile terpisah, nol akun personal yang login, jaringan terpisah. Sock puppet management, evidence chain (hash + timestamp), storage terenkripsi, batas legal.
 
 ## Backend tools
 
@@ -85,7 +93,7 @@ Keduanya opsional. Repo ini tidak pernah menyimpan API key - semua key masuk via
 
 ## Legal & etik
 
-Suite ini untuk OSINT pada target yang kamu punya dasar legal (asest sendiri, riset keamanan berizin, riset publik, jurnalisme dengan dasar publik). Kepatuhan ToS platform dan hukum yurisdiksi masing-masing tetap tanggung jawab pengguna. Lihat `skills/osint-opsec/SKILL.md`.
+Suite ini untuk OSINT pada target yang kamu punya dasar legal (aset sendiri, riset keamanan berizin, riset publik, jurnalisme dengan dasar publik). Kepatuhan ToS platform dan hukum yurisdiksi masing-masing tetap tanggung jawab pengguna. Lihat `skills/osint-opsec/SKILL.md`.
 
 ## Roadmap
 
