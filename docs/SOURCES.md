@@ -1,6 +1,11 @@
-﻿# Daftar Sumber (kurasi)
+# Daftar Sumber (kurasi)
 
 Link ke upstream, tidak di-vendor. API key TIDAK disimpan di repo ini - set via env var saat runtime.
+
+> **Master API index**: [API-CATALOG.md](API-CATALOG.md) - 243 API / 44 kategori,
+> di-distilusi dari [cipher387/API-s-for-OSINT](https://github.com/cipher387/API-s-for-OSINT)
+> (CC0 1.0). Refresh: `bash tools/sync-api-catalog.sh`.
+> File ini = tambalan spesifik OSINT-workflow yang tidak ada di katalog generik.
 
 ## X / Twitter (riwayat & matching)
 
