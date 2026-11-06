@@ -79,6 +79,16 @@ Links to upstream only; nothing vendored. API keys are NEVER stored in this repo
 | Dark Web Informer RSS (`darkwebinformer.com/feed/` -> `/rss/`) | clearnet index of darknet leak/broker/extortion claims - actor, victim, record count, date. Watch: `bash tools/leak-news-watch.sh` |
 | Ahmia | darknet search (Tor) |
 
+### Aggregator profiles (found via Agent-Reach / Exa - high yield for person pivots)
+
+| Source | Function |
+|---|---|
+| web3.bio (`/<handle>.farcaster`, `.sol`, `.sns`) | Farcaster/SNS identity aggregator: verified socials, FID, wallet addresses |
+| disdex.io | Discord user lookup by snowflake: servers, invites, creation date |
+| ethos.network (`/profile/x/<handle>`) | Web3 credibility score + reviews |
+| urlscan.io/domain/ | domain age, ASN, IP history, screenshot archive |
+| Agent-Reach CLI (Exa backend) | semantic web search that surfaces aggregator profiles plain search misses - `bash tools/agent-reach.sh web <query>` |
+
 NOTE: everything in this section is for **exposure confirmation and monitoring**.
 Using stolen credentials against accounts you do not own is credential stuffing /
 unauthorized access - illegal in effectively every jurisdiction. Downloaded dumps are

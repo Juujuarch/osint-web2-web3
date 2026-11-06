@@ -48,6 +48,7 @@ bash tools/install-backends.sh
 bash tools/username-hunt.sh <username>      # search a username across 600+ platforms
 bash tools/person-hunt.sh <username>        # keyless profile check: github/x/keybase/steam/tiktok (+IG)
 bash tools/person-hunt.sh --name "Full Name" # name -> handle candidates -> same checks
+bash tools/agent-reach.sh web <query>      # Exa web search / yt / rd / ig / tw / read (Agent-Reach)
 bash tools/domain-recon.sh <domain>         # whois/DNS/subdomains/headers
 bash tools/x-history.sh <handle>            # X profile history via public archives
 HIBP_KEY=... bash tools/breach-check.sh <email>   # email -> breach list (HIBP API key)
